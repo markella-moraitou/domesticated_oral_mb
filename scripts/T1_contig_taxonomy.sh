@@ -31,9 +31,6 @@ catdb=$REFDIR/CAT_DB # Where the CAT db will be created
 
 mkdir -p $subdir # Create subdirectory if not there
 
-## Determine samples to be run
-sample_list=${indir}/sample_list.csv # The file list determining the samples to be processed
-
 ## Load modules and activate environment
 conda activate oral_mb_evol
 

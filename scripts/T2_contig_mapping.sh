@@ -2,7 +2,7 @@
 
 #SBATCH -p main
 #SBATCH -n 100
-#SBATCH -t 1-00:00:00
+#SBATCH -t 2-00:00:00
 #SBATCH -J contig_abundances
 #SBATCH --output=logs/job-%x.%j.out
 #SBATCH --error=logs/job-%x.%j.err
