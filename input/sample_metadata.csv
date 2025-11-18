@@ -1,0 +1,123 @@
+Sample.ID,Species,Common name,Study,Domestication,Location,Country,Period
+DM_026,Equus caballus,Domestic horse,This Study,domestic,,,Unknown
+DM_027,Equus caballus,Domestic horse,This Study,domestic,,,Unknown
+DM_028,Equus caballus,Domestic horse,This Study,domestic,,,Unknown
+DM_029,Equus caballus,Domestic horse,This Study,domestic,,,Unknown
+MS_121,Equus caballus,Domestic horse,This Study,domestic,,,Unknown
+MS_122,Equus caballus,Domestic horse,This Study,domestic,,,Unknown
+RM_112,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
+RM_113,Equus quagga,Plains zebra,This Study,wild,Kiato,Congo (DR),20th century
+RM_114,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
+RM_116,Equus quagga,Plains zebra,This Study,wild,Katodjo,Rwanda,20th century
+RM_117,Equus quagga,Plains zebra,This Study,wild,Tsavo,Kenya,Unknown
+RM_118,Equus quagga,Plains zebra,This Study,wild,Katodjo,Rwanda,20th century
+RM_120,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
+RM_121,Equus quagga,Plains zebra,This Study,wild,Akagera,Rwanda,Unknown
+RM_122,Equus quagga,Plains zebra,This Study,wild,Luapula,Congo (DR),20th century
+RM_123,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
+RM_124,Equus quagga,Plains zebra,This Study,wild,Akagera vallei,Rwanda,Unknown
+RM_125,Equus quagga,Plains zebra,This Study,wild,Kibarras plateau,Congo (DR),Unknown
+RM_126,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
+RM_127,Equus quagga,Plains zebra,This Study,wild,Katodjo,Rwanda,20th century
+RM_128,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
+RM_129,Equus quagga,Plains zebra,This Study,wild,Kitangala,Congo (DR),20th century
+RM_130,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
+RM_131,Equus quagga,Plains zebra,This Study,wild,Kapiri,Congo (DR),Unknown
+RM_133,Equus quagga,Plains zebra,This Study,wild,Akagera,Rwanda,Unknown
+RM_135,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
+RM_136,Equus quagga,Plains zebra,This Study,wild,Akagera,Rwanda,Unknown
+RM_137,Equus quagga,Plains zebra,This Study,wild,?,Rwanda,Unknown
+RM_138,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
+RM_140,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
+BSQ001.A,Homo sapiens,Human,FellowsYates2021,human,Unknown (Basque Pyranees region),Spain,Unknown
+JAE008.A,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century
+JAE010.A,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century
+JAE012.A,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century
+JAE013.A,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century
+JAE015.A,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century
+LIS001.A,Homo sapiens,Human,FellowsYates2021,human,"Lisbon Metropolitan Area, Portugal",Portugal,Unknown
+LIS002.A,Homo sapiens,Human,FellowsYates2021,human,"Lisbon Metropolitan Area, Portugal",Portugal,Unknown
+LIS003.A,Homo sapiens,Human,FellowsYates2021,human,"Lisbon Metropolitan Area, Portugal",Portugal,Unknown
+PYK001.A,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,20th century
+PYK002.A,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,20th century
+PYK003.A,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,20th century
+PYK004.A,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,20th century
+PYK005.A,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,20th century
+HM_043,Ovis ammon,Argali,This Study,wild,Altai,Mongolia,20th century
+MV_284,Ovis ammon,Argali,This Study,wild,"Bel Karasu, Nordhang d. chrebet Saryzhas",Kyrgyzstan,20th century
+MV_285,Ovis ammon,Argali,This Study,wild,"Cherebet Saryzhas, E-Teil des Terskej Alatau",Kyrgyzstan,20th century
+MV_286,Ovis ammon,Argali,This Study,wild,"Bel Karasu, Nordhang d. chrebet Saryzhas",Kyrgyzstan,20th century
+MV_287,Ovis ammon,Argali,This Study,wild,,Mongolia,20th century
+MV_288,Ovis ammon,Argali,This Study,wild,"Csilun, E Terskej Alatau",Kyrgyzstan,20th century
+MV_289,Ovis ammon,Argali,This Study,wild,"Bel Karasu, Nordhang d. chrebet Saryzhas",Kyrgyzstan,20th century
+MV_290,Ovis ammon,Argali,This Study,wild,Mountains west of Beijing,China,20th century
+MV_291,Ovis ammon,Argali,This Study,wild,"Mokatschi(-basi), chrebet Saryzhas",Kyrgyzstan,20th century
+MV_292,Ovis ammon,Argali,This Study,wild,Katschka Tor (Pass),Kyrgyzstan,20th century
+DM_009,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown
+MS_029,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown
+MS_032,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown
+MS_117,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown
+MS_118,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown
+MS_004,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
+MS_005,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
+MS_009,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
+MS_010,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
+MS_051,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
+MS_053,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
+MS_057,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
+MS_058,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
+MS_091,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
+MS_092,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
+MS_095,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
+MS_096,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
+MS_099,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
+MS_101,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
+MS_102,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
+MS_103,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
+MS_104,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
+MS_105,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
+MS_106,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
+MS_107,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
+MS_108,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
+MS_109,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
+MS_113,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
+MS_114,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
+DM_002,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
+DM_005,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
+DM_008,Sus domesticus,Domestic pig,This Study,domestic,,Poland or Ukraine?,Unknown
+DM_013,Sus domesticus,Domestic pig,This Study,domestic,,Poland?,Unknown
+DM_014,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
+DM_015,Sus domesticus,Domestic pig,This Study,domestic,,Serbia?,Unknown
+DM_016,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
+DM_017,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
+DM_019,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
+DM_020,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
+DM_021,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
+DM_022,Sus domesticus,Domestic pig,This Study,domestic,,UK?,Unknown
+maybe_DM_017,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
+DM_003,Sus scrofa,Wild boar,This Study,wild,,,Unknown
+DM_004,Sus scrofa,Wild boar,This Study,wild,,,Unknown
+DM_006,Sus scrofa,Wild boar,This Study,wild,,,Unknown
+DM_007,Sus scrofa,Wild boar,This Study,wild,,,Unknown
+DM_010,Sus scrofa,Wild boar,This Study,wild,,,Unknown
+DM_011,Sus scrofa,Wild boar,This Study,wild,,,20th century
+DM_012,Sus scrofa,Wild boar,This Study,wild,,,Unknown
+MV_099,Sus scrofa,Wild boar,This Study,wild,,Austria,20th century
+MV_100,Sus scrofa,Wild boar,This Study,wild,,Austria,20th century
+MV_102,Sus scrofa,Wild boar,This Study,wild,,Romania,20th century
+MV_103,Sus scrofa,Wild boar,This Study,wild,,Austria,19th century
+MV_201,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century
+MV_202,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century
+MV_203,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century
+MV_204,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century
+MV_206,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century
+MV_207,Sus scrofa,Wild boar,This Study,wild,"Strasse von Hundsheim mach Wolfsthal, PB Bruck a.d. Leitha, GB Hainburgh/Donau",Austria,20th century
+MV_208,Sus scrofa,Wild boar,This Study,wild,Falkenstein,Austria,20th century
+MV_209,Sus scrofa,Wild boar,This Study,wild,Falkenstein,Austria,21st century
+MV_210,Sus scrofa,Wild boar,This Study,wild,"Purkersdorf, Sankt Poelten",Austria,21st century
+MV_211,Sus scrofa,Wild boar,This Study,wild,"Gaenserndorf, Stopfenreuth",Austria,21st century
+MV_212,Sus scrofa,Wild boar,This Study,wild,Lainzer Tiergarten,Austria,20th century
+MV_213,Sus scrofa,Wild boar,This Study,wild,,Austria,20th century
+MV_214,Sus scrofa,Wild boar,This Study,wild,"Verlandsungszone des Neusiedler-sees, S Jois, GB+PB Neusiedl/See",Austria,20th century
+MV_215,Sus scrofa,Wild boar,This Study,wild,"Lainzer Tiergarten, Johannserkogel",Austria,20th century
+MV_216,Sus scrofa,Wild boar,This Study,wild,"Unterwart, Oberwart",Austria,21st century
