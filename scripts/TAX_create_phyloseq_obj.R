@@ -42,7 +42,7 @@ metadata_path <- file.path(indir, "sample_metadata.csv")
 
 rc_path <- file.path(outdir, "read_count.csv")
 rl_path <- file.path(outdir, "read_length.csv")
-decom_path <- file.path(outdir, "3_mapped_reads", "decOM_output", "decOM_output.csv")
+#decom_path <- file.path(outdir, "3_mapped_reads", "decOM_output", "decOM_output.csv")
 
 #### Load files
 # Load OTU table
@@ -56,9 +56,9 @@ rc <- read.csv(rc_path) %>% rename_with( ~ paste0(., "_count")) # read count per
 
 rl <- read.csv(rl_path) %>% rename_with( ~ paste0(., "_avlength")) # average read length per step
 
-decom <- read.csv(decom_path, row.names = NULL) %>% # decOM output
+#decom <- read.csv(decom_path, row.names = NULL) %>% # decOM output
   # remove entries where no kmers have been counted
-  filter(rowSums(!is.na(select(., starts_with("p_")))) > 0)
+#  filter(rowSums(!is.na(select(., starts_with("p_")))) > 0)
 
 ###############################################
 #### COMBINE AND TIDY UP SAMPLE METADATA  #####
@@ -71,7 +71,7 @@ meta <-
   meta %>%
   left_join(rc, by=c("Sample.ID"="sample_count")) %>%
   left_join(rl, by=c("Sample.ID"="sample_avlength")) %>% 
-  left_join(decom, by=c("Sample.ID"="Sink")) %>%
+#  left_join(decom, by=c("Sample.ID"="Sink")) %>%
   as.data.frame %>%
   # Get genus 
   mutate(Genus = str_remove(Species, " .*"))
@@ -172,7 +172,7 @@ taxa_names(phy_sp) <- make.unique(as.vector(phy_sp@tax_table[,"species"]))
 phy_sp@sam_data$taxa_raw <- estimate_richness(phy_sp, measures="Observed")$Observed
 
 # Calculate oral to soil ratio according to DecOM results
-phy_sp@sam_data <- phy_sp@sam_data %>% data.frame %>% mutate(oral_to_soil_ratio=(p_mOral + p_aOral)/p_Sediment.Soil) %>% sample_data
+#phy_sp@sam_data <- phy_sp@sam_data %>% data.frame %>% mutate(oral_to_soil_ratio=(p_mOral + p_aOral)/p_Sediment.Soil) %>% sample_data
 
 # CLR-normalisation
 phy_sp_clr <- phy_sp %>% transform('clr')

@@ -49,6 +49,10 @@ if [ ! -f "$SSL_CERT_FILE" ]; then
     unset SSL_CERT_FILE REQUESTS_CA_BUNDLE CURL_CA_BUNDLE
 fi
 
+# Activate the modules, you can also choose to use a specific version with e.g. `Nextflow/21.10`.
+module load python/3.9.5 nextflow nf-core nf-core-pipelines
+module load PDC singularity
+
 ## Print some info
 echo "Taking input from: ${seqdir}"
 echo "Saving output to: ${subdir}"
@@ -73,21 +77,29 @@ then
   tail -n+2 ${sample_list} | while IFS=, read -r sample species _ _ _
   do
     seq_input=${seqdir}/${sample}_unmapped.fastq.gz
-    contig_input=${contigdir}/${sample}_final_contigs_1000bp.fa
+    contig_input=${contigdir}/${sample}_final_contigs.fa
     if [[ ! -f $seq_input ]] || [[ ! -f $contig_input ]]
     then
       echo "Input missing for ${sample}. Skipping..."
       continue
     fi
-    # Check that file is not empty
-    if [[ $(head $contig_input | wc -l) == 0 ]]
+    # Calculate longest contig. If shorter than 500kb, skip.
+    short=1
+    while read i
+    do
+      if [[ ${i} -gt 500 ]]
+      then
+        short=0
+        echo "Adding ${sample}"
+        echo -e "$sample,0,$seq_input,," >> ./samplesheet.csv
+        echo -e "$sample,0,MEGAHIT,$contig_input" >> ./assemblies.csv
+        break
+      fi
+    done < <(grep -v '>' $contig_input  2> /dev/null | awk '{print length($0)}' 2> /dev/null)
+    if [[ $short -eq 1 ]]
     then
-      echo "Contig input for $sample is empty. Skipping..."
-      continue
+      echo "$sample contigs too short. Skipping..."
     fi
-    echo "Adding ${sample}"
-    echo -e "$sample,0,$seq_input,," >> ./samplesheet.csv
-    echo -e "$sample,0,MEGAHIT,$contig_input" >> ./assemblies.csv
   done
 fi
 
