@@ -9,9 +9,9 @@ centroids <- function(ordination, phyloseq) {
   # Get ordination vectors as data frame and species info
   ord_df <- data.frame(vegan::scores(ordination, choices = c(1:4), display = "sites"))
   ord_df <- ord_df %>%
-    cbind(select(data.frame(phyloseq@sam_data), c(Common.name, Species, Order_grouped, Order, diet.general, habitat.general)))
+    cbind(select(data.frame(phyloseq@sam_data), c(Common.name, Species, Genus, Domestication)))
   # Group and calculate means
-  centroids <- ord_df %>% group_by(Common.name, Species, Order_grouped, Order, diet.general, habitat.general) %>%
+  centroids <- ord_df %>% group_by(Common.name, Species, Genus, Domestication) %>%
           summarise_all(.funs = mean, na.rm = TRUE)
   centroids <- left_join(centroids, phylopics, by = c("Species" = "Species"))
   return(centroids)
@@ -166,7 +166,7 @@ custom_ord_plot <- function(phyloseq, ordination, colour_var, shape_var, arrows_
   # Plot
   p <- ord_plot(ord, colour=colour_var, shape=shape_var, alpha = 0.8) +
     custom_theme() +
-    geom_phylopic(data = centroids, aes_string(colour = colour_var), uuid = centroids$uid, fill = "transparent", width = 0.3)
+    geom_phylopic(data = centroids, aes_string(colour = colour_var), uuid = centroids$uid, fill = "transparent", height = 0.6)
   # Add the correct scales
   if (colour_var == "Order_grouped") {
     p <- p +
@@ -177,6 +177,9 @@ custom_ord_plot <- function(phyloseq, ordination, colour_var, shape_var, arrows_
   } else if (colour_var == "habitat.general") {
     p <- p +
         scale_colour_manual(values=habitat_palette, name = "Habitat")
+  } else if (colour_var == "Species") {
+    p <- p +
+        scale_colour_manual(values=species_palette, name = "Species")
   }
   if (shape_var == "diet.general") {
     p <- p +
@@ -187,11 +190,14 @@ custom_ord_plot <- function(phyloseq, ordination, colour_var, shape_var, arrows_
   } else if (shape_var == "Common.name") {
     p <- p +
         scale_shape_manual(values=species_shape_scale, name = "Species")
+  } else if (shape_var == "Domestication") {
+    p <- p +
+        scale_shape_manual(values=dom_shape_palette, name = "Domestication")
   }
   # Add more layers
   p <- p +
     theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
-    guides(shape = guide_legend(ncol = 2), colour = guide_legend(ncol = 2))
+    guides(shape = guide_legend(ncol = 1), colour = guide_legend(ncol = 1))
   # If PCA, add taxon arrows
   if (type == "PCA") {
     p <- p +
