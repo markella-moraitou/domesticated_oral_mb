@@ -49,7 +49,7 @@ python $scriptdir/modules/prep_CAT_abundance_table.py \
   --taxonomy_dir $catdir \
   --mapping_minid 98 \
   --mapping_mincov 0 \
-  --tax_ranks "species,genus,family" > prep_CAT_abundance_table.log
+  --tax_ranks "species,genus,family" 2>&1 | tee prep_CAT_abundance_table.log
 
 #### TAXONOMY AND GENE TABLE ####
 
@@ -59,7 +59,7 @@ python $scriptdir/modules/combine_contig_func_tax.py \
       --mapping_dir $depthdir \
       --mapping_minid 98 \
       --mapping_mincov 50 \
-      --tax_ranks "species,genus,family" > combined_contig_annotations.log
+      --tax_ranks "species,genus,family" 2>&1 | tee combined_contig_annotations.log
 
 # Compress
 gzip combined_contig_annotations.tsv
