@@ -126,6 +126,10 @@ ggsave(filename = file.path(subdir, "phy_sp_composition.png"), device="png", wid
 #### Ordinations ####
 
 # Get sample type as a factor
+phy_sp_clr@sam_data$sample_type <- factor(ifelse(!phy_sp_clr@sam_data$is.neg, "sample",
+                                             ifelse(phy_sp_clr@sam_data$Species == "Environmental control", "swab", "blank")),
+                                             levels = c("sample", "swab", "blank"))
+
 ord <-  ord_calc(phy_sp_clr, method = "PCA")
 
 # Scree plot
@@ -138,10 +142,10 @@ ggsave(file.path(subdir, "screeplot.png"), p, width=8, height=6)
 
 shape_palette <- c("domestic" = 1, "wild" = 16, "feral" = 6, "human" = 8)
 
-p <- ord_plot(ord, colour="Species", shape="Domestication") +
+p <- ord_plot(ord, colour="Species", shape="sample_type") +
   custom_theme() +
+  scale_shape_manual(values=c("swab"=0, "blank"=2, "sample"=16), name = "Is control/blank") +
   scale_color_manual(values=species_palette, name = "Species") +
-  scale_shape_manual(values=shape_palette, name = "Domestication status") +
   theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
   guides(colour = guide_legend(ncol = 2, size = 1, byrow = TRUE))
 
@@ -149,10 +153,10 @@ ggsave(file.path(subdir, "phy_sp_sample_PCA_1_2.png"), p, width=6, height=6)
 
 # Axes 3 and 4
 
-p <- ord_plot(ord, colour="Species", shape="Domestication", axes = c(3,4)) +
+p <- ord_plot(ord, colour="Species", shape="sample_type", axes = c(3,4)) +
   custom_theme() +
+  scale_shape_manual(values=c("swab"=0, "blank"=2, "sample"=16), name = "Is control/blank") +
   scale_color_manual(values=species_palette, name = "Species") +
-  scale_shape_manual(values=shape_palette, name = "Domestication status") +
   theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
   guides(colour = guide_legend(ncol = 2, size = 1, byrow = TRUE))
 
@@ -181,7 +185,7 @@ ggsave(file.path(subdir, "phy_sp_rarefaction.png"), p, width=8, height=6)
 #### Prevalence at different abundance thresholds ####
 prevalence <- data.frame()
 for (abundance in c(0, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1)) {
-  df <- data.frame(prevalence(phy_spr, detection = abundance)) %>% rownames_to_column()
+  df <- data.frame(prevalence(subset_samples(phy_spr, !is.neg), detection = abundance)) %>% rownames_to_column()
   colnames(df) <- c("OTU", "Prevalence")
   df$Abundance_thres <- abundance
   prevalence <- rbind(prevalence, df)
@@ -233,14 +237,14 @@ ggsave(file.path(subdir, "phy_sp_sums_distr.png"),
        width=8, height=8)
 
 #### Taxonomic richness and read count ####
-p = ggplot(phy_sp@sam_data, aes(x=sample_sums(phy_sp), y=taxa_raw, color = Species)) +
+p = ggplot(phy_sp@sam_data, aes(x=sample_sums(phy_sp), y=taxa_raw, color = is.neg)) +
   geom_point(size=2) +
   labs(x="Number of reads classified", y="Number of OTUs") +
-  scale_color_manual(values=species_palette, name = "") +
+  scale_color_manual(values=c(`TRUE`="grey", `FALSE`="darkgreen"), labels = c(`TRUE`="negative", `FALSE`="sample"), name = "") +
   scale_x_continuous(trans="log10") +
   theme(legend.position = "bottom")
 
-p <- ggMarginal(p, type="violin", size=2, groupFill=TRUE)
+p <- ggMarginal(p, type="histogram", size=2, groupFill=TRUE)
 
 ggsave(file.path(subdir, "phy_sp_taxa_and_read_dist.png"), p, width=4, height=4)
 
@@ -249,7 +253,7 @@ psm <- phy_spr %>% psmelt
 
 # Get taxon rank within a sample vs abundance for the first 500 taxa
 rank_abund <- psm %>% group_by(Sample) %>% mutate(Rank=rank(-Abundance, ties="first")) %>%
-  select(OTU, Sample, Species, Abundance, Rank, taxa_raw) %>%
+  select(OTU, Sample, is.neg, Species, Abundance, Rank, taxa_raw) %>%
   # Keep only the first 500 taxa. Remove 0s
   filter(Rank<500) %>% filter(Abundance>0)
 
@@ -257,11 +261,11 @@ rank_abund <- psm %>% group_by(Sample) %>% mutate(Rank=rank(-Abundance, ties="fi
 write.table(rank_abund, file.path(subdir, "phy_sp_rank_abundance_taxa.csv"), sep=",", row.names=FALSE, quote=FALSE)
 
 # Plot
-p <- ggplot(data=rank_abund, aes(x=Rank, y=Abundance, colour=Species)) +
+p <- ggplot(data=rank_abund, aes(x=Rank, y=Abundance, colour=is.neg)) +
   geom_jitter(alpha = 0.3, size = 1, width = 0.05, height = 0.001) +
   scale_y_continuous(trans="log10") +
   scale_x_continuous(trans="log10") +
-  scale_color_manual(values=species_palette, name = "") +
+  scale_color_manual(values=c(`TRUE`="grey30", `FALSE`="darkgreen"), name = "Is control/blank") +
   ylab("log-transformed relative abundance") + xlab("Abundance rank in sample")
 
 ggsave(file=file.path(subdir, "phy_sp_rank_abundance_plot.png"), p, width=8, height=6)

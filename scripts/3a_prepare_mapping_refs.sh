@@ -92,7 +92,7 @@ awk -F "," 'NR>1 && $2!="" {print $2}' ${sample_list} | sort | uniq | while read
 do
   species=${species// /"_"} # Replace whitespace with underscore
   # For humans -- concatenate PhiX and human only
-  if [[ $species == "Homo_sapiens" ]]
+  if [[ $species == "Homo_sapiens" ]] || [[ $species == "Extraction_blank" ]] || [[ $species == "Library_blank" ]] || [[ $species == "Environmental_control" ]]
   then
     full_ref=${conc_refdir}/concat_human_phix_genomes.fa.gz 
     if [[ ! -f ${full_ref} ]]

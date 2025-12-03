@@ -1,18 +1,4 @@
 sample_name,host_species,study
-BSQ001.A,Homo sapiens,FellowsYates2021
-LIS001.A,Homo sapiens,FellowsYates2021
-LIS002.A,Homo sapiens,FellowsYates2021
-LIS003.A,Homo sapiens,FellowsYates2021
-PYK001.A,Homo sapiens,FellowsYates2021
-PYK002.A,Homo sapiens,FellowsYates2021
-PYK003.A,Homo sapiens,FellowsYates2021
-PYK004.A,Homo sapiens,FellowsYates2021
-PYK005.A,Homo sapiens,FellowsYates2021
-JAE013.A,Homo sapiens,Velsko2019
-JAE015.A,Homo sapiens,Velsko2019
-JAE012.A,Homo sapiens,Velsko2019
-JAE010.A,Homo sapiens,Velsko2019
-JAE008.A,Homo sapiens,Velsko2019
 DM_002,Sus domesticus,This Study
 DM_003,Sus scrofa,This Study
 DM_004,Sus scrofa,This Study
@@ -121,3 +107,76 @@ RM_137,Equus quagga,This Study
 RM_138,Equus quagga,This Study
 RM_140,Equus quagga,This Study
 maybe_DM_017,Sus domesticus,This Study
+DM_C01,Environmental control,This study
+HM_015,Environmental control,This study
+HM_038,Environmental control,This study
+MS_C02,Environmental control,This study
+MV_C02,Environmental control,This study
+MV_C03,Environmental control,This study
+RB_C03,Environmental control,This study
+LB_9,Library blank,This study
+LB_6,Library blank,This study
+LB_5,Library blank,This study
+LB_4,Library blank,This study
+LB_3,Library blank,This study
+LB_26,Library blank,This study
+LB_25,Library blank,This study
+LB_24,Library blank,This study
+LB_23,Library blank,This study
+LB_21,Library blank,This study
+LB_2,Library blank,This study
+LB_19,Library blank,This study
+LB_18,Library blank,This study
+LB_17,Library blank,This study
+LB_16,Library blank,This study
+LB_15,Library blank,This study
+LB_14,Library blank,This study
+LB_11,Library blank,This study
+EB_8_2,Extraction blank,This study
+EB_8_1,Extraction blank,This study
+EB_7_2,Extraction blank,This study
+EB_7_1,Extraction blank,This study
+EB_6_2,Extraction blank,This study
+EB_5_2,Extraction blank,This study
+EB_5_1,Extraction blank,This study
+EB_4_2,Extraction blank,This study
+EB_4_1,Extraction blank,This study
+EB_3_2,Extraction blank,This study
+EB_3_1,Extraction blank,This study
+EB_26_2,Extraction blank,This study
+EB_26_1,Extraction blank,This study
+EB_25_2,Extraction blank,This study
+EB_25_1,Extraction blank,This study
+EB_24_2,Extraction blank,This study
+EB_24_1,Extraction blank,This study
+EB_23,Extraction blank,This study
+EB_22,Extraction blank,This study
+EB_21,Extraction blank,This study
+EB_19_2,Extraction blank,This study
+EB_19_1,Extraction blank,This study
+EB_18_2,Extraction blank,This study
+EB_18_1,Extraction blank,This study
+EB_16,Extraction blank,This study
+EB_15_2,Extraction blank,This study
+EB_15_1,Extraction blank,This study
+EB_14_2,Extraction blank,This study
+EB_13_2,Extraction blank,This study
+EB_13_1,Extraction blank,This study
+EB_12_2,Extraction blank,This study
+EB_12_1,Extraction blank,This study
+EB_11_2,Extraction blank,This study
+EB_11_1,Extraction blank,This study
+BSQ001.A,Homo sapiens,FellowsYates2021
+LIS001.A,Homo sapiens,FellowsYates2021
+LIS002.A,Homo sapiens,FellowsYates2021
+LIS003.A,Homo sapiens,FellowsYates2021
+PYK001.A,Homo sapiens,FellowsYates2021
+PYK002.A,Homo sapiens,FellowsYates2021
+PYK003.A,Homo sapiens,FellowsYates2021
+PYK004.A,Homo sapiens,FellowsYates2021
+PYK005.A,Homo sapiens,FellowsYates2021
+JAE013.A,Homo sapiens,Velsko2019
+JAE015.A,Homo sapiens,Velsko2019
+JAE012.A,Homo sapiens,Velsko2019
+JAE010.A,Homo sapiens,Velsko2019
+JAE008.A,Homo sapiens,Velsko2019

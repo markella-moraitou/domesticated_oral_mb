@@ -38,7 +38,7 @@ mkdir -p $subdir # Create subdirectory if not there
 
 ## Instructions to install decOM - More in https://github.com/CamilaDuitama/decOM.git
 ## Installing decOM
-#mkdir ${PROJDIR}/software
+#mkdir -p ${PROJDIR}/software
 
 #cd ${PROJDIR}/software
 #git clone https://github.com/CamilaDuitama/decOM.git
@@ -190,4 +190,4 @@ python ${scriptdir}/modules/genome_mapping_stats.py "_idxstats.txt" ${outdir}/re
 # Activate environment
 conda activate decOM
 
-bash ${scriptdir}/modules/source_tracking_decOM.sh "_unmapped.fastq.gz" 1
+bash ${scriptdir}/modules/source_tracking_decOM.sh "_unmapped.fastq.gz" 40

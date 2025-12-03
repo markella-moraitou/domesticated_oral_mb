@@ -84,7 +84,7 @@ meta$Species <- factor(meta$Species, levels=spe_levels)
 
 ## Get better samples names
 rename <- meta %>%
-  select(Sample.ID, Common.name) %>% rename(old_name = Sample.ID) %>%
+  select(Sample.ID, Species, Common.name) %>% rename(old_name = Sample.ID) %>%
   # new names will consist of the first letter of the genus, the first three of the species epithet and a number
   group_by(Common.name) %>% mutate(num=row_number() %>% str_pad(width = 2, pad = "0")) %>%
   separate(col=Common.name, into=c("part1", "part2"), fill="left", sep=" ") %>%
@@ -114,7 +114,7 @@ tbl <- otu_table %>% column_to_rownames("lineage") %>%
   mutate(across(everything(), floor))
 
 # Get new names
-tbl <- tbl %>%
+tbl <- tbl %>% 
   rename_with(~rename$new_name[match(., rename$old_name)], everything())
 
 OTU = otu_table(tbl, taxa_are_rows = TRUE)
@@ -170,6 +170,9 @@ taxa_names(phy_sp) <- make.unique(as.vector(phy_sp@tax_table[,"species"]))
 
 # Collect number of OTUs per sample
 phy_sp@sam_data$taxa_raw <- estimate_richness(phy_sp, measures="Observed")$Observed
+
+#Add column indicating samples and controls
+phy_sp@sam_data$is.neg <- grepl("blank|control", phy_sp@sam_data$Order_grouped)
 
 # Calculate oral to soil ratio according to DecOM results
 #phy_sp@sam_data <- phy_sp@sam_data %>% data.frame %>% mutate(oral_to_soil_ratio=(p_mOral + p_aOral)/p_Sediment.Soil) %>% sample_data
