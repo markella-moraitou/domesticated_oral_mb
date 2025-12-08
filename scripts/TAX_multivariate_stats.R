@@ -72,8 +72,8 @@ phy_sp_f_pa <- microbiome::transform(phy_sp_f, "pa")
 tukey_results <- data.frame()
 
 # Compare species
-disp <- betadisper(vegdist(t(otu_table(phy_sp_f_clr)), method = "euclidean"), group = phy_sp_f_clr@sam_data$Species)
-  
+disp <- betadisper(vegdist(t(otu_table(phy_sp_f_clr)), method = "euclidean"), group = phy_sp_f_clr@sam_data$Group)
+
 disp_tukey <- TukeyHSD(disp, which = "group", ordered = FALSE)$group %>% data.frame %>% rownames_to_column("Comparison") %>%
   separate(Comparison, into = c("Group1", "Group2"), sep = "-")
 
@@ -82,11 +82,12 @@ tukey_results <- rbind(tukey_results, disp_tukey)
 write.csv(tukey_results, file = file.path(subdir, "betadisper_tukey_results.csv"), row.names = FALSE, quote = FALSE)
 
 disp_df <- data.frame(Sample = sample_names(phy_sp_f_clr),
+                      Group = phy_sp_f_clr@sam_data$Group,
                       Species = phy_sp_f_clr@sam_data$Species,
                       Genus = phy_sp_f_clr@sam_data$Genus,
                       Distance = disp$distances)
 
-p <- ggplot(data = disp_df, aes(x = Species, y = Distance, fill = Species)) +
+p <- ggplot(data = disp_df, aes(x = Group, y = Distance, fill = Species)) +
     geom_boxplot(outlier.shape = NA, aes(fill = Species)) +
     geom_jitter(alpha = 0.5, width = 0.2) +
     scale_fill_manual(values = species_palette, name = "Species") +
@@ -128,9 +129,10 @@ p = ggplot(data = phy_phylum_melt, aes(x = Abundance, y = Sample, fill = OTU)) +
   facet_grid(Species~., space = "free_y", scales = "free_y", switch = "y") +
   scale_fill_manual(values=phylum_palette, name = "Phylum") +
   scale_x_continuous(expand = c(0,0)) +
-  theme(legend.position = "bottom", legend.title.position = "top", legend.key.spacing.x = unit(0.5, "cm"),
-        axis.text.y = element_blank(), axis.ticks.y = element_blank(), axis.title.y = element_blank()) +
-  guides(fill = guide_legend(nrow = 3, byrow = TRUE)) +
+  theme(legend.position = "bottom", legend.title.position = "top", legend.key.spacing.x = unit(0.5, "cm"), legend.direction = "vertical",
+        axis.text.y = element_blank(), axis.ticks.y = element_blank(), axis.title.y = element_blank(),
+        strip.background = element_blank(), strip.text = element_blank()) +
+  guides(fill = guide_legend(ncol = 2, byrow = TRUE)) +
   xlab("")
 
 ## Get sample_metadata
@@ -155,7 +157,7 @@ p_bar <-
     xlab("") + ylab("")
 
 ggsave(filename = file.path(subdir, "phy_sp_f_composition.png"), device="png", width=8, height=12,
-       plot_grid(p, p_bar, ncol = 2, align = "h", rel_widths = c(4, 2)))
+       plot_grid(p, p_bar, ncol = 2, align = "h", rel_widths = c(4, 1.5)))
 
 #############
 #### PCA ####
@@ -243,6 +245,47 @@ ggsave(file.path(subdir, "RDA_clr_taxa_1_2.png"), p, width=6, height=6)
 
 write.csv(taxa_plot(ord, phy_sp_f_clr)[["data"]], file = file.path(subdir, "RDA_clr_taxa_scores.csv"), row.names = FALSE, quote = TRUE)
 
+## Without humans
+
+phy_sp_f_clr_nohuman <- phy_sp_f_clr %>% subset_samples(Species != "Homo sapiens")
+
+# Species traits to use as constraints
+species_traits <- c("Domestic_sheep", "Feral_sheep", "Wild_argali",
+                    "Domestic_horse", "Wild_zebra",
+                    "Domestic_pig", "Wild_boar")
+
+# Ordinate using all data
+ord <- ord_calc(phy_sp_f_clr_nohuman, constraints = species_traits, method = "RDA")
+
+# Select variables and check for collinearity
+ord_step <- step(ord@ord, scope = formula(ord@ord), test = "perm")
+vif.cca(ord_step)
+
+# Scree plot
+p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
+            xlim(paste0("RDA", 1:length(species_traits)))
+
+ggsave(file.path(subdir, "RDA_clr_nohuman_screeplot.png"), p, width=3, height=3)
+
+# Scree plot
+p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
+            xlim(paste0("RDA", 1:length(species_traits)))
+
+ggsave(file.path(subdir, "RDA_clr_nohuman_screeplot.png"), p, width=3, height=3)
+
+## SAMPLE PLOTS
+
+# Color by species
+p <- custom_ord_plot(phy_sp_f_clr_nohuman, ord, colour="Species", shape="Domestication", type = "RDA")
+
+ggsave(file.path(subdir, "RDA_clr_nohuman_1_2.png"), p, width=6, height=6)
+
+## TAXA PLOT
+p <- taxa_plot(ord, phy_sp_f_clr)[["plot"]]
+ggsave(file.path(subdir, "RDA_clr_nohuman_taxa_1_2.png"), p, width=6, height=6)
+
+write.csv(taxa_plot(ord, phy_sp_f_clr)[["data"]], file = file.path(subdir, "RDA_clr_nohuman_taxa_scores.csv"), row.names = FALSE, quote = TRUE)
+
 #### PRESENCE-ABSENCE ####
 
 phy_sp_f_pa <- phy_sp_f_pa %>%
@@ -285,6 +328,47 @@ ggsave(file.path(subdir, "RDA_pa_taxa_1_2.png"), p, width=6, height=6)
 
 write.csv(taxa_plot(ord, phy_sp_f_clr)[["data"]], file = file.path(subdir, "RDA_pa_taxa_scores.csv"), row.names = FALSE, quote = TRUE)
 
+## Without humans
+
+phy_sp_f_pa_nohuman <- phy_sp_f_pa %>% subset_samples(Species != "Homo sapiens")
+
+# Species traits to use as constraints
+species_traits <- c("Domestic_sheep", "Feral_sheep", "Wild_argali",
+                    "Domestic_horse", "Wild_zebra",
+                    "Domestic_pig", "Wild_boar")
+
+# Ordinate using all data
+ord <- ord_calc(phy_sp_f_pa_nohuman, constraints = species_traits, method = "RDA")
+
+# Select variables and check for collinearity
+ord_step <- step(ord@ord, scope = formula(ord@ord), test = "perm")
+vif.cca(ord_step)
+
+# Scree plot
+p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
+            xlim(paste0("RDA", 1:length(species_traits)))
+
+ggsave(file.path(subdir, "RDA_pa_nohuman_screeplot.png"), p, width=3, height=3)
+
+# Scree plot
+p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
+            xlim(paste0("RDA", 1:length(species_traits)))
+
+ggsave(file.path(subdir, "RDA_pa_nohuman_screeplot.png"), p, width=3, height=3)
+
+## SAMPLE PLOTS
+
+# Color by species
+p <- custom_ord_plot(phy_sp_f_pa_nohuman, ord, colour="Species", shape="Domestication", type = "RDA")
+
+ggsave(file.path(subdir, "RDA_pa_nohuman_1_2.png"), p, width=6, height=6)
+
+## TAXA PLOT
+p <- taxa_plot(ord, phy_sp_f_pa)[["plot"]]
+ggsave(file.path(subdir, "RDA_pa_nohuman_taxa_1_2.png"), p, width=6, height=6)
+
+write.csv(taxa_plot(ord, phy_sp_f_pa)[["data"]], file = file.path(subdir, "RDA_pa_nohuman_taxa_scores.csv"), row.names = FALSE, quote = TRUE)
+
 ###################
 #### PERMANOVA ####
 ###################
@@ -300,11 +384,12 @@ sample_data <- as.data.frame(subset_samples(phy_sp_f_clr, Species != "Homo sapie
 
 genus <- sample_data$Genus
 dom <- sample_data$Domestication
+reads <- sample_data$contig_reads_count
 
 set.seed(123)
 
 # Run PERMANOVA with all factors and only species
-perm <- adonis2(otus ~ genus * dom,
+perm <- adonis2(otus ~ genus * dom + reads,
         permutations = 1000, by = "term", method = "euclidean")
 
 write.csv(as.data.frame(perm), file = file.path(subdir, "permanova_clr.csv"), row.names = TRUE, quote = TRUE)
@@ -318,11 +403,12 @@ sample_data <- as.data.frame(subset_samples(phy_sp_philr, Species != "Homo sapie
 
 genus <- sample_data$Genus
 dom <- sample_data$Domestication
+reads <- sample_data$contig_reads_count
 
 set.seed(123)
 
 # Run PERMANOVA with all factors and only species
-perm <- adonis2(otus ~ genus * dom,
+perm <- adonis2(otus ~ genus * dom + reads,
         permutations = 1000, by = "term", method = "euclidean")
 
 write.csv(as.data.frame(perm), file = file.path(subdir, "permanova_philr.csv"), row.names = TRUE, quote = TRUE)
@@ -336,11 +422,12 @@ sample_data <- as.data.frame(subset_samples(phy_sp_f, Species != "Homo sapiens")
 
 genus <- sample_data$Genus
 dom <- sample_data$Domestication
+reads <- sample_data$contig_reads_count
 
 set.seed(123)
 
 # Run PERMANOVA with all factors and only species
-perm <- adonis2(otus ~ genus * dom,
+perm <- adonis2(otus ~ genus * dom + reads,
         permutations = 1000, by = "term", method = "euclidean")
 
 write.csv(as.data.frame(perm), file = file.path(subdir, "permanova_pa.csv"), row.names = TRUE, quote = TRUE)
@@ -425,8 +512,6 @@ p <- p +
 ggsave(file.path(subdir, "distances_to_human_clr.png"), p, width=5, height=4)
 
 #### PhilR ####
-
-#### PRESENCE ABSENCE ####
 
 human_centroid <- colMeans(otu_table(subset_samples(phy_sp_philr, Species == "Homo sapiens")))
 

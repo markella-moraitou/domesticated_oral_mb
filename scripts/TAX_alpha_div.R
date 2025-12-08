@@ -211,23 +211,18 @@ alpha_div <- left_join(alpha_div,
 alpha_div <- alpha_div %>%
   left_join(data.frame(phy_sp_f@sam_data) %>%
               rownames_to_column(var = "Sample") %>%
-              select(Sample, Species, Genus, Common.name, Domestication),
+              select(Sample, Species, Genus, Group, Common.name, Domestication, contig_reads_count),
             by = c("Sample"))
 
 write.csv(alpha_div, file = file.path(subdir, "alpha_diversity.csv"), quote = FALSE, row.names = FALSE)
 
 # Filtered
 
-# Add feral and domestic label for sheep
-alpha_div <- alpha_div %>%
-  mutate(Common.name = case_when(Species == "Ovis aries" ~ paste0(Common.name, "\n(", Domestication, ")"),
-                                 TRUE ~ Common.name))
-
-p <- ggplot(alpha_div, aes(x=Common.name, y=filt)) +
+p <- ggplot(alpha_div, aes(x=Group, y=filt)) +
   geom_boxplot(aes(fill=Species)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=species_palette, name = "Species") +
-  scale_x_discrete(labels = setNames(phy_sp_f@sam_data$Common.name, phy_sp_f@sam_data$Species)) +
+  scale_x_discrete(labels = setNames(phy_sp_f@sam_data$Group, phy_sp_f@sam_data$Species)) +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
   theme(legend.position = "none", axis.title.y = element_blank()) +
   ylab("Observed species richness") +
@@ -236,11 +231,11 @@ p <- ggplot(alpha_div, aes(x=Common.name, y=filt)) +
 ggsave(file.path(subdir, "alpha_diversity_filt.png"), p, width=8, height=6)
 
 # Filtered & Rarefied
-p <- ggplot(alpha_div, aes(x=Common.name, y=filt_rarefied)) +
+p <- ggplot(alpha_div, aes(x=Group, y=filt_rarefied)) +
   geom_boxplot(aes(fill=Species)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=species_palette, name = "Species") +
-  scale_x_discrete(labels = setNames(phy_sp_f@sam_data$Common.name, phy_sp_f@sam_data$Species)) +
+  scale_x_discrete(labels = setNames(phy_sp_f@sam_data$Group, phy_sp_f@sam_data$Species)) +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
   theme(legend.position = "none", axis.title.y = element_blank()) +
   ylab("Observed species richness (after rarefaction)") +
@@ -249,11 +244,11 @@ p <- ggplot(alpha_div, aes(x=Common.name, y=filt_rarefied)) +
 ggsave(file.path(subdir, "alpha_diversity_filt_rarefied.png"), p, width=8, height=6)
 
 # Raw
-p <- ggplot(alpha_div, aes(x=Common.name, y=raw)) +
+p <- ggplot(alpha_div, aes(x=Group, y=raw)) +
   geom_boxplot(aes(fill=Species)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=species_palette, name = "Species") +
-  scale_x_discrete(labels = setNames(phy_sp_f@sam_data$Common.name, phy_sp_f@sam_data$Species)) +
+  scale_x_discrete(labels = setNames(phy_sp_f@sam_data$Group, phy_sp_f@sam_data$Species)) +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
   theme(legend.position = "none", axis.title.y = element_blank()) +
   ylab("Observed species richness") +
@@ -262,11 +257,11 @@ p <- ggplot(alpha_div, aes(x=Common.name, y=raw)) +
 ggsave(file.path(subdir, "alpha_diversity_raw.png"), p, width=8, height=6)
 
 # Raw & Rarefied
-p <- ggplot(alpha_div, aes(x=Common.name, y=raw_rarefied)) +
+p <- ggplot(alpha_div, aes(x=Group, y=raw_rarefied)) +
   geom_boxplot(aes(fill=Species)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=species_palette, name = "Species") +
-  scale_x_discrete(labels = setNames(phy_sp_f@sam_data$Common.name, phy_sp_f@sam_data$Species)) +
+  scale_x_discrete(labels = setNames(phy_sp_f@sam_data$Group, phy_sp_f@sam_data$Species)) +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
   theme(legend.position = "none", axis.title.y = element_blank()) +
   ylab("Observed species richness (after rarefaction)") +
@@ -287,22 +282,17 @@ otu_table <- t(as.matrix(subset_taxa(phy_sp_rarefied, superkingdom == "Bacteria"
 phy_div <- pd(otu_table, bac_tree) %>% rownames_to_column(var = "Sample") %>%
   left_join(data.frame(phy_sp_f@sam_data) %>%
               rownames_to_column(var = "Sample") %>%
-              select(Sample, Species, Genus, Common.name, Domestication),
+              select(Sample, Species, Genus, Group, Common.name, Domestication),
             by = c("Sample"))
 
 write.csv(phy_div, file = file.path(subdir, "phylogenetic_diversity.csv"), quote = FALSE, row.names = FALSE)
 
-# Add feral and domestic label for sheep
-phy_div <- phy_div %>%
-  mutate(Common.name = case_when(Species == "Ovis aries" ~ paste0(Common.name, "\n(", Domestication, ")"),
-                                 TRUE ~ Common.name))
-
 # Plot phylogenetic diversity
-p <- ggplot(phy_div, aes(x=Common.name, y=PD)) +
+p <- ggplot(phy_div, aes(x=Group, y=PD)) +
   geom_boxplot(aes(fill=Species)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=species_palette, name = "Species") +
-  scale_x_discrete(labels = setNames(phy_sp@sam_data$Common.name, phy_sp@sam_data$Species)) +
+  scale_x_discrete(labels = setNames(phy_sp@sam_data$Group, phy_sp@sam_data$Species)) +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
   theme(legend.position = "none", axis.title.y = element_blank()) +
   ylab("Faith's PD") +
@@ -339,7 +329,7 @@ div_filt <- div %>% filter(!is.na(filt_rarefied) & !is.na(PD))
 cor.test(div_filt$filt_rarefied, div_filt$PD, method = "pearson")
 
 # Linear model
-model <- aov(filt_rarefied ~ Genus*Domestication, data = div_filt)
+model <- aov(filt_rarefied ~ Genus*Domestication + contig_reads_count, data = div_filt)
 res <- summary(model)[[1]]
 
 shapiro.test(residuals(model))

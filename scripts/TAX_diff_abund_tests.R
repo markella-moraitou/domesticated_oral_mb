@@ -77,12 +77,12 @@ phy_ancom <- phy_ancom %>% prune_taxa(taxa_sums(phy_ancom) > 0, .)
 phy_ancom@sam_data$Domestication <- factor(phy_ancom@sam_data$Domestication, levels = c("wild", "domestic"))
 
 ancom_all <- ancombc2(data = phy_ancom,
-               fix_formula = "Domestication + Genus",
+               fix_formula = "Domestication + Genus + contig_reads_count",
                tax_level = "genus", 
-               p_adj_method = "holm", prv_cut = 0.05, 
+               p_adj_method = "holm", prv_cut = 0.1, 
                group="Domestication",
                struc_zero = FALSE,
-               lib_cut = 1000,
+               lib_cut = 0,
                verbose = TRUE)
 
 write.csv(ancom_all$res, file = file.path(subdir, "ancombc_all.csv"), quote = FALSE, row.names = FALSE)
@@ -92,12 +92,12 @@ phy_equus <- phy_genus %>% subset_samples(Genus == "Equus")
 phy_equus <- phy_equus %>% prune_taxa(taxa_sums(phy_equus) > 0, .)
 
 ancom_equus <- ancombc2(data = phy_equus,
-               fix_formula = "Domestication", 
+               fix_formula = "Domestication + contig_reads_count", 
                tax_level = "genus", 
-               p_adj_method = "holm", prv_cut = 0.05,
+               p_adj_method = "holm", prv_cut = 0.1,
                group="Domestication",
                struc_zero = FALSE,
-               lib_cut = 1000,
+               lib_cut = 0,
                verbose = TRUE)
 
 write.csv(ancom_equus$res, file = file.path(subdir, "ancom_equus.csv"), quote = FALSE, row.names = FALSE)
@@ -107,12 +107,11 @@ phy_ovis <- phy_genus %>% subset_samples(Genus == "Ovis" & Domestication != "fer
 phy_ovis <- phy_ovis %>% prune_taxa(taxa_sums(phy_ovis) > 0, .)
 
 ancom_ovis <- ancombc2(data = phy_ovis,
-               fix_formula = "Domestication", # Here you add in the form of a formula your variable of interest (Necropolis) and maybe other variables you want to account for
-               tax_level = "genus", # You can change this to other levels in your phyloseq. Make sure to spell it how it is in your phyloseq (e.g. species not Species). If you go above family it recommended to change neg_l (below) to TRUE
-               p_adj_method = "holm", prv_cut = 0.05, # Some parameters. prv_cut=0.10 means that taxa found in less than 10% of samples are ignored
-               group="Domestication",
+               fix_formula = "Domestication + contig_reads_count",
+               tax_level = "genus",
+               p_adj_method = "holm", prv_cut = 0.1,
                struc_zero = FALSE,
-               lib_cut = 1000,
+               lib_cut = 0,
                verbose = TRUE)
 
 write.csv(ancom_ovis$res, file = file.path(subdir, "ancom_ovis.csv"), quote = FALSE, row.names = FALSE)
@@ -120,34 +119,34 @@ write.csv(ancom_ovis$res, file = file.path(subdir, "ancom_ovis.csv"), quote = FA
 #### Within Sus ####
 
 phy_sus <- phy_genus %>% subset_samples(Genus == "Sus")
-phy_sus <- phy_sus %>% prune_taxa(taxa_sums(phy_ovis) > 0, .)
+phy_sus <- phy_sus %>% prune_taxa(taxa_sums(phy_ovis) > 0.1, .)
 
 ancom_sus <- ancombc2(data = phy_sus,
-               fix_formula = "Domestication", # Here you add in the form of a formula your variable of interest (Necropolis) and maybe other variables you want to account for
-               tax_level = "genus", # You can change this to other levels in your phyloseq. Make sure to spell it how it is in your phyloseq (e.g. species not Species). If you go above family it recommended to change neg_l (below) to TRUE
-               p_adj_method = "holm", prv_cut = 0.05, # Some parameters. prv_cut=0.10 means that taxa found in less than 10% of samples are ignored
+               fix_formula = "Domestication + contig_reads_count",
+               tax_level = "genus",
+               p_adj_method = "holm", prv_cut = 0,
                group="Domestication",
                struc_zero = FALSE,
-               lib_cut = 1000,
+               lib_cut = 0,
                verbose = TRUE)
 
 write.csv(ancom_sus$res, file = file.path(subdir, "ancom_sus.csv"), quote = FALSE, row.names = FALSE)
 
 #### Human vs Wild ####
 
-phy_human <- phy_genus %>% subset_samples(Genus == "Homo" | Domestication == "wild")
-phy_human <- phy_human %>% prune_taxa(taxa_sums(phy_ovis) > 0, .)
+phy_human <- phy_genus %>% subset_samples(Domestication %in% c("human", "wild"))
+phy_human <- phy_human %>% prune_taxa(taxa_sums(phy_human) > 0.1, .)
 
-phy_human@sam_data$Domestication <- factor(phy_human@sam_data$Domestication, levels = c("wild", "human"))
+phy_human@sam_data$Domestication <- ifelse(phy_human@sam_data$Domestication == "human", "human", "animal")
+phy_human@sam_data$Domestication <- factor(phy_human@sam_data$Domestication, levels = c("animal", "human"))
 
 ancom_human <- ancombc2(data = phy_human,
-               fix_formula = "Domestication", # Here you add in the form of a formula your variable of interest (Necropolis) and maybe other variables you want to account for
-               rand_formula = "(1|Genus)",
-               tax_level = "genus", # You can change this to other levels in your phyloseq. Make sure to spell it how it is in your phyloseq (e.g. species not Species). If you go above family it recommended to change neg_l (below) to TRUE
-               p_adj_method = "holm", prv_cut = 0.05, # Some parameters. prv_cut=0.10 means that taxa found in less than 10% of samples are ignored
+               fix_formula = "Domestication + contig_reads_count",
+               tax_level = "genus",
+               p_adj_method = "holm", prv_cut = 0.1,
                group="Domestication",
                struc_zero = FALSE,
-               lib_cut = 1000,
+               lib_cut = 0,
                verbose = TRUE)
 
 write.csv(ancom_human$res, file = file.path(subdir, "ancom_human.csv"), quote = FALSE, row.names = FALSE)
@@ -197,9 +196,26 @@ p <- ggplot(data = res_filt, aes(x = dataset, y = taxon, fill = lfc)) +
     scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, name = "Log-fold change", na.value = "transparent") +
     geom_text(aes(label = signif), color = "black", size = 3) +
     theme(legend.position = "top", legend.text = element_text(angle = 45, vjust = 0.5),
-          panel.background = element_rect(fill = "grey90"), panel.grid = element_blank())
+          panel.background = element_rect(fill = "grey90"), panel.grid = element_blank(),
+          axis.text.y = element_text(size = 8))
 
 ggsave(p, filename = file.path(subdir, "ancom_res_heatmap.png"), width = 6, height = 10)
+
+# Also plot lfc's as scatterplots to show if they correlate
+data_palette <- darken(species_palette[c("Equus quagga", "Ovis ammon", "Sus scrofa", "Homo sapiens")])
+names(data_palette) <- c("Horse\nvs Zebra", "Sheep\nvs Argali", "Pig\nvs Boar",  "Human\nvs Wild")
+
+p <- filter(res_filt, c(!dataset %in% c("Domestic\nvs Wild (All)", "Human\nvs Wild"))) %>%
+    ggplot(aes(y = taxon, x = lfc)) +
+    geom_vline(xintercept = 0, linewidth = 0.3, colour = "grey60") +
+    geom_point(aes(colour = dataset, shape = dataset), size = 3, alpha = 0.8) +
+    geom_line(aes(group = taxon), linetype = "dotted", size = 0.3) +
+    scale_colour_manual(values = data_palette, name = "Dataset") +
+    scale_shape_manual(values = c(0, 2, 4), name = "Dataset") +
+    theme(legend.position = "top", axis.text.y = element_text(size = 8)) +
+    xlab("Log-fold change in domestic animals")
+
+ggsave(p, filename = file.path(subdir, "ancom_lfc_comparison.png"), width = 6, height = 10)
 
 #########################
 #### PLOT ABUNDANCES ####
@@ -231,11 +247,11 @@ p <- ggplot(ancom_abund, aes(x = Common.name, y = Abundance, fill = Species, col
     geom_boxplot(alpha = 0.8, size = 0.5, outliers = FALSE) +
     geom_jitter(width = 0.2, size = 1, alpha = 0.8) +    scale_fill_manual(values = species_palette, name = "Species") +
     scale_colour_manual(values = darken(species_palette), name = "Species") +
-    facet_wrap(~ paste(as.character(taxon), label, sep = "\n"), ncol = 3, scales = "free_y") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8),
+    facet_wrap(~ paste(as.character(taxon), label, sep = "\n"), ncol = 4, scales = "free_y") +
+    theme(axis.text = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8),
           axis.title.x = element_blank(),
           strip.text.x = element_text(size = 8),
           legend.position = "bottom") + ylab("CLR-transformed abundances") +
     guides(fill=guide_legend(nrow=2,byrow=TRUE))
 
-ggsave(p, filename = file.path(subdir, "ancom_abundances.png"), width = 10, height = 20)
+ggsave(p, filename = file.path(subdir, "ancom_abundances.png"), width = 10, height = 30)
