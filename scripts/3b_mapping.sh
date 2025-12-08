@@ -2,7 +2,7 @@
 
 #SBATCH -p main
 #SBATCH -n 200
-#SBATCH -t 5:00:00
+#SBATCH -t 15:00:00
 #SBATCH -J mapping
 #SBATCH --output=logs/job-%x.%j.out
 #SBATCH --error=logs/job-%x.%j.err
@@ -190,4 +190,4 @@ python ${scriptdir}/modules/genome_mapping_stats.py "_idxstats.txt" ${outdir}/re
 # Activate environment
 conda activate decOM
 
-bash ${scriptdir}/modules/source_tracking_decOM.sh "_unmapped.fastq.gz" 40
+bash ${scriptdir}/modules/source_tracking_decOM.sh "_unmapped.fastq.gz" 5

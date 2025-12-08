@@ -42,7 +42,7 @@ metadata_path <- file.path(indir, "sample_metadata.csv")
 
 rc_path <- file.path(outdir, "read_count.csv")
 rl_path <- file.path(outdir, "read_length.csv")
-#decom_path <- file.path(outdir, "3_mapped_reads", "decOM_output", "decOM_output.csv")
+decom_path <- file.path(outdir, "3_mapped_seqs", "decOM_output", "decOM_output.csv")
 
 #### Load files
 # Load OTU table
@@ -56,9 +56,9 @@ rc <- read.csv(rc_path) %>% rename_with( ~ paste0(., "_count")) # read count per
 
 rl <- read.csv(rl_path) %>% rename_with( ~ paste0(., "_avlength")) # average read length per step
 
-#decom <- read.csv(decom_path, row.names = NULL) %>% # decOM output
+decom <- read.csv(decom_path, row.names = NULL) %>% # decOM output
   # remove entries where no kmers have been counted
-#  filter(rowSums(!is.na(select(., starts_with("p_")))) > 0)
+  filter(rowSums(!is.na(select(., starts_with("p_")))) > 0)
 
 ###############################################
 #### COMBINE AND TIDY UP SAMPLE METADATA  #####
@@ -67,11 +67,15 @@ rl <- read.csv(rl_path) %>% rename_with( ~ paste0(., "_avlength")) # average rea
 # Combine all sample and host species metadata in one big table
 meta <- metadata
 
+# Add suffix .A to sample IDs to match OTU table
+decom <- decom %>% mutate(Sink = case_when(!grepl("_", Sink) ~ paste0(Sink, ".A"),
+                        TRUE ~ Sink))
+
 meta <-
   meta %>%
   left_join(rc, by=c("Sample.ID"="sample_count")) %>%
   left_join(rl, by=c("Sample.ID"="sample_avlength")) %>% 
-#  left_join(decom, by=c("Sample.ID"="Sink")) %>%
+  left_join(decom, by=c("Sample.ID"="Sink")) %>%
   as.data.frame %>%
   # Get genus 
   mutate(Genus = str_remove(Species, " .*"))
@@ -82,14 +86,27 @@ meta$Domestication = factor(meta$Domestication, levels = c("wild", "feral", "dom
 spe_levels <- meta %>% arrange(Genus, Domestication) %>% pull(Species) %>% unique
 meta$Species <- factor(meta$Species, levels=spe_levels)
 
+# Distinguish between fully domestic and feral sheep
+meta$Group <- ifelse(meta$Species == "Ovis aries", 
+                    paste(meta$Domestication, "sheep", sep = " "),
+                    meta$Common.name)
+
+group_levels <- meta %>% arrange(Genus, Domestication, Group) %>% pull(Group) %>% unique
+
+meta$Group <- factor(meta$Group, levels=group_levels)
+
+#Add column indicating samples and controls
+meta$is.neg <- grepl("blank|control", meta$Species)
+
 ## Get better samples names
 rename <- meta %>%
-  select(Sample.ID, Species, Common.name) %>% rename(old_name = Sample.ID) %>%
+  select(Sample.ID, Species, Common.name, is.neg) %>% rename(old_name = Sample.ID) %>%
   # new names will consist of the first letter of the genus, the first three of the species epithet and a number
   group_by(Common.name) %>% mutate(num=row_number() %>% str_pad(width = 2, pad = "0")) %>%
   separate(col=Common.name, into=c("part1", "part2"), fill="left", sep=" ") %>%
   # Use first 4 letters of last adjective (part3) and the entire last word (part4)
-  mutate(new_name=paste(str_to_lower(part2), num, sep="_")) %>%
+  mutate(new_name=case_when(!is.neg ~ paste(str_to_lower(part2), num, sep="_"),
+                          is.neg ~ paste(str_sub(part1, 1, 3), str_to_lower(part2), num, sep="_"))) %>%
   select(old_name, new_name)
 
 # Temporary bit for this unknown library
@@ -171,11 +188,8 @@ taxa_names(phy_sp) <- make.unique(as.vector(phy_sp@tax_table[,"species"]))
 # Collect number of OTUs per sample
 phy_sp@sam_data$taxa_raw <- estimate_richness(phy_sp, measures="Observed")$Observed
 
-#Add column indicating samples and controls
-phy_sp@sam_data$is.neg <- grepl("blank|control", phy_sp@sam_data$Order_grouped)
-
 # Calculate oral to soil ratio according to DecOM results
-#phy_sp@sam_data <- phy_sp@sam_data %>% data.frame %>% mutate(oral_to_soil_ratio=(p_mOral + p_aOral)/p_Sediment.Soil) %>% sample_data
+phy_sp@sam_data <- phy_sp@sam_data %>% data.frame %>% mutate(oral_to_soil_ratio=(p_mOral + p_aOral)/p_Sediment.Soil) %>% sample_data
 
 # CLR-normalisation
 phy_sp_clr <- phy_sp %>% transform('clr')
