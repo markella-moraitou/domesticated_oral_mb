@@ -119,7 +119,7 @@ write.csv(ancom_ovis$res, file = file.path(subdir, "ancom_ovis.csv"), quote = FA
 #### Within Sus ####
 
 phy_sus <- phy_genus %>% subset_samples(Genus == "Sus")
-phy_sus <- phy_sus %>% prune_taxa(taxa_sums(phy_ovis) > 0.1, .)
+phy_sus <- phy_sus %>% prune_taxa(taxa_sums(phy_ovis) > 0, .)
 
 ancom_sus <- ancombc2(data = phy_sus,
                fix_formula = "Domestication + contig_reads_count",
@@ -135,7 +135,7 @@ write.csv(ancom_sus$res, file = file.path(subdir, "ancom_sus.csv"), quote = FALS
 #### Human vs Wild ####
 
 phy_human <- phy_genus %>% subset_samples(Domestication %in% c("human", "wild"))
-phy_human <- phy_human %>% prune_taxa(taxa_sums(phy_human) > 0.1, .)
+phy_human <- phy_human %>% prune_taxa(taxa_sums(phy_human) > 0, .)
 
 phy_human@sam_data$Domestication <- ifelse(phy_human@sam_data$Domestication == "human", "human", "animal")
 phy_human@sam_data$Domestication <- factor(phy_human@sam_data$Domestication, levels = c("animal", "human"))
