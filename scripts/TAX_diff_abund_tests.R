@@ -77,7 +77,7 @@ phy_ancom <- phy_ancom %>% prune_taxa(taxa_sums(phy_ancom) > 0, .)
 phy_ancom@sam_data$Domestication <- factor(phy_ancom@sam_data$Domestication, levels = c("wild", "domestic"))
 
 ancom_all <- ancombc2(data = phy_ancom,
-               fix_formula = "Domestication + Genus + contig_reads_count",
+               fix_formula = "Domestication + Genus",
                tax_level = "genus", 
                p_adj_method = "holm", prv_cut = 0.1, 
                group="Domestication",
@@ -92,7 +92,7 @@ phy_equus <- phy_genus %>% subset_samples(Genus == "Equus")
 phy_equus <- phy_equus %>% prune_taxa(taxa_sums(phy_equus) > 0, .)
 
 ancom_equus <- ancombc2(data = phy_equus,
-               fix_formula = "Domestication + contig_reads_count", 
+               fix_formula = "Domestication", 
                tax_level = "genus", 
                p_adj_method = "holm", prv_cut = 0.1,
                group="Domestication",
@@ -107,7 +107,7 @@ phy_ovis <- phy_genus %>% subset_samples(Genus == "Ovis" & Domestication != "fer
 phy_ovis <- phy_ovis %>% prune_taxa(taxa_sums(phy_ovis) > 0, .)
 
 ancom_ovis <- ancombc2(data = phy_ovis,
-               fix_formula = "Domestication + contig_reads_count",
+               fix_formula = "Domestication",
                tax_level = "genus",
                p_adj_method = "holm", prv_cut = 0.1,
                struc_zero = FALSE,
@@ -119,10 +119,10 @@ write.csv(ancom_ovis$res, file = file.path(subdir, "ancom_ovis.csv"), quote = FA
 #### Within Sus ####
 
 phy_sus <- phy_genus %>% subset_samples(Genus == "Sus")
-phy_sus <- phy_sus %>% prune_taxa(taxa_sums(phy_ovis) > 0, .)
+phy_sus <- phy_sus %>% prune_taxa(taxa_sums(phy_sus) > 0, .)
 
 ancom_sus <- ancombc2(data = phy_sus,
-               fix_formula = "Domestication + contig_reads_count",
+               fix_formula = "Domestication",
                tax_level = "genus",
                p_adj_method = "holm", prv_cut = 0,
                group="Domestication",
@@ -141,7 +141,7 @@ phy_human@sam_data$Domestication <- ifelse(phy_human@sam_data$Domestication == "
 phy_human@sam_data$Domestication <- factor(phy_human@sam_data$Domestication, levels = c("animal", "human"))
 
 ancom_human <- ancombc2(data = phy_human,
-               fix_formula = "Domestication + contig_reads_count",
+               fix_formula = "Domestication",
                tax_level = "genus",
                p_adj_method = "holm", prv_cut = 0.1,
                group="Domestication",
