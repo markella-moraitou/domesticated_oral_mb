@@ -43,7 +43,7 @@ annot_str <- read_tsv(file.path(outdir, "Final_tables", "gene_abundance_stratifi
 dram_summary <- read_tsv(file.path(dramdir, "genome_summary_form.tsv"))
 
 # Contaminant taxa list
-abund_negs <- read.csv(file.path(indir, "abundant_in_negs_taxa.csv"))
+abund_negs <- read.csv(file.path(outdir, "community_analysis", "assess_contamination", "abundant_in_negs_taxa.csv"))
 low_prev <- read.csv(file.path(outdir, "community_analysis", "assess_contamination", "low_prevalence_taxa.csv"))
 
 contam <- unique(c(abund_negs$x, low_prev$x))
@@ -70,7 +70,6 @@ meta <-
   left_join(rc, by=c("Sample.ID"="sample_count")) %>%
   left_join(rl, by=c("Sample.ID"="sample_avlength")) %>% 
   left_join(contig_info, by=c("Sample.ID" = "sample")) %>%
-#  left_join(decom, by=c("Sample.ID"="Sink")) %>%
   as.data.frame %>%
   # Get genus 
   mutate(Genus = str_remove(Species, " .*"))
@@ -81,14 +80,25 @@ meta$Domestication = factor(meta$Domestication, levels = c("wild", "feral", "dom
 spe_levels <- meta %>% arrange(Genus, Domestication) %>% pull(Species) %>% unique
 meta$Species <- factor(meta$Species, levels=spe_levels)
 
+meta$is.neg <- grepl("control|blank", meta$Species, ignore.case = TRUE)
+
+# Distinguish between fully domestic and feral sheep
+meta$Group <- ifelse(meta$Species == "Ovis aries", 
+                    paste(meta$Domestication, "sheep", sep = " "),
+                    meta$Common.name)
+
+group_levels <- meta %>% arrange(Genus, Domestication, Group) %>% pull(Group) %>% unique
+
+meta$Group <- factor(meta$Group, levels=group_levels)
 ## Get better samples names
 rename <- meta %>%
-  select(Sample.ID, Common.name) %>% rename(old_name = Sample.ID) %>%
+  select(Sample.ID, Species, Common.name, is.neg) %>% rename(old_name = Sample.ID) %>%
   # new names will consist of the first letter of the genus, the first three of the species epithet and a number
   group_by(Common.name) %>% mutate(num=row_number() %>% str_pad(width = 2, pad = "0")) %>%
   separate(col=Common.name, into=c("part1", "part2"), fill="left", sep=" ") %>%
   # Use first 4 letters of last adjective (part3) and the entire last word (part4)
-  mutate(new_name=paste(str_to_lower(part2), num, sep="_")) %>%
+  mutate(new_name=case_when(!is.neg ~ paste(str_to_lower(part2), num, sep="_"),
+                          is.neg ~ paste(str_sub(part1, 1, 3), str_to_lower(part2), num, sep="_"))) %>%
   select(old_name, new_name)
 
 # Temporary bit for this unknown library
@@ -192,7 +202,7 @@ phy_gene@sam_data$Gene_richness <- estimate_richness(phy_gene, measure="Observed
 
 #### Identify low content samples
 # Identify when number of genes plateaus
-contigs_to_genes <- data.frame(phy_gene@sam_data) %>% select(Species, contig_count, len_median, Total_abundance, Gene_richness)
+contigs_to_genes <- data.frame(phy_gene@sam_data) %>% select(Species, contig_count, len_median, Total_abundance, Gene_richness, is.neg)
 
 thres <- 10^6
 
@@ -219,6 +229,7 @@ saveRDS(phy_gene_clr, file.path(subdir, "phy_gene_clr.RDS"))
 
 # Remove low content samples and genes that do not pass the filters
 phy_gene_f <- prune_samples(!(sample_names(phy_gene) %in% low_content_samples), phy_gene)
+phy_gene_f <- subset_samples(phy_gene_f, !is.neg)
 phy_gene_f <- prune_taxa(taxa_sums(phy_gene_f) > 0, phy_gene_f)
 
 ##############################
