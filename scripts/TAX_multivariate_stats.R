@@ -74,6 +74,8 @@ tukey_results <- data.frame()
 # Compare species
 disp <- betadisper(vegdist(t(otu_table(phy_sp_f_clr)), method = "euclidean"), group = phy_sp_f_clr@sam_data$Group)
 
+disp_anova <- anova(disp)
+
 disp_tukey <- TukeyHSD(disp, which = "group", ordered = FALSE)$group %>% data.frame %>% rownames_to_column("Comparison") %>%
   separate(Comparison, into = c("Group1", "Group2"), sep = "-")
 
@@ -93,7 +95,7 @@ p <- ggplot(data = disp_df, aes(x = Group, y = Distance, fill = Species)) +
     scale_fill_manual(values = species_palette, name = "Species") +
     theme(legend.position = "none", axis.text.x = element_text(hjust = 1))
 
-ggsave(file.path(subdir, "betadisper.png"), p, width = 8, height = 12)
+ggsave(file.path(subdir, "betadisper.png"), p, width = 5, height = 5)
 
 #########################
 #####  COMPOSITION  #####
@@ -126,27 +128,27 @@ phy_phylum_melt$Sample <- factor(phy_phylum_melt$Sample, levels=sample_levels)
 
 p = ggplot(data = phy_phylum_melt, aes(x = Abundance, y = Sample, fill = OTU)) +
   geom_bar(stat = "identity") +
-  facet_grid(Species~., space = "free_y", scales = "free_y", switch = "y") +
+  facet_grid(Group~., space = "free_y", scales = "free_y", switch = "y") +
   scale_fill_manual(values=phylum_palette, name = "Phylum") +
   scale_x_continuous(expand = c(0,0)) +
   theme(legend.position = "bottom", legend.title.position = "top", legend.key.spacing.x = unit(0.5, "cm"), legend.direction = "vertical",
         axis.text.y = element_blank(), axis.ticks.y = element_blank(), axis.title.y = element_blank(),
         strip.background = element_blank(), strip.text = element_blank()) +
-  guides(fill = guide_legend(ncol = 2, byrow = TRUE)) +
+  guides(fill = guide_legend(ncol = 2, byrow = FALSE)) +
   xlab("")
 
 ## Get sample_metadata
-species_bar <- phy_phylum_melt %>% select(Sample, Species, Common.name, Domestication) %>% unique %>%
+species_bar <- phy_phylum_melt %>% select(Sample, Species, Group, Common.name, Domestication) %>% unique %>%
                arrange(Sample) %>%
                # Choose one label per species (in the middle of the species group)
-               group_by(Species) %>% mutate(order = row_number()) %>%
-               mutate(label = ifelse(order == floor(mean(order)), Common.name, "")) %>%
-               mutate(label = ifelse(is.na(label), as.character(Species), label))
+               group_by(Group, Species) %>% mutate(order = row_number()) %>%
+               mutate(label = ifelse(order == floor(mean(order)), as.character(Group), "")) %>%
+               mutate(label = ifelse(is.na(label), as.character(Group), label))
 
 p_bar <-
-  ggplot(data = species_bar, aes(y = Sample, x=1, fill = Species, group = Common.name)) +
+  ggplot(data = species_bar, aes(y = Sample, x=1, fill = Species, group = Group)) +
   geom_tile() + scale_fill_manual(values = species_palette, name = "") +
-  facet_grid(rows = vars(Species), scales = "free", space = "free", switch = "y") +
+  facet_grid(rows = vars(Group), scales = "free", space = "free", switch = "y") +
   theme(axis.ticks = element_blank(),
         axis.text.x = element_blank(),
         axis.text.y = element_text(angle = 0),
@@ -156,8 +158,8 @@ p_bar <-
         strip.text = element_blank()) + scale_y_discrete(position = "right", label = setNames(species_bar$label, species_bar$Sample)) +
     xlab("") + ylab("")
 
-ggsave(filename = file.path(subdir, "phy_sp_f_composition.png"), device="png", width=8, height=12,
-       plot_grid(p, p_bar, ncol = 2, align = "h", rel_widths = c(4, 1.5)))
+ggsave(filename = file.path(subdir, "phy_sp_f_composition.png"), device="png", width=6, height=10,
+       plot_grid(p, p_bar, ncol = 2, align = "h", rel_widths = c(3.5, 1.5)))
 
 #############
 #### PCA ####
@@ -183,7 +185,7 @@ p <- custom_ord_plot(phy_sp_f_clr, ord, colour="Species", shape="Domestication",
 
 ggsave(file.path(subdir, "PCA_clr_1_2.png"), p, width=6, height=6)
 
-#### PRESENCE-ABSENCE ####
+#### PHILR ABUNDANCES ####
 
 ord <- ord_calc(phy_sp_f_pa, method = "PCA")
 
@@ -198,6 +200,27 @@ p <- custom_ord_plot(phy_sp_f_pa, ord, colour="Species", shape="Domestication", 
   scale_shape_manual(values=dom_shape_palette, name = "Domestication")
 
 ggsave(file.path(subdir, "PCA_pa_1_2.png"), p, width=6, height=6)
+
+#### All data ####
+ord <- ord_calc(phy_sp_philr, method = "PCA")
+
+# Scree plot
+p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
+            xlim(c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"))
+
+ggsave(file.path(subdir, "screeplot_philr.png"), p, width=8, height=6)
+
+# Color by species
+p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0.5) +
+  custom_theme() +
+  scale_shape_manual(values=dom_shape_palette, name = "Domestication") +
+  scale_color_manual(values=species_palette, name = "Species") +
+  theme(legend.position = "bottom", legend.direction = "vertical") +
+  geom_phylopic(data = centroids(ord@ord, phy_sp_philr), aes(colour = Species), uuid = centroids(ord@ord, phy_sp_philr)$uid, width = 0.2, alpha = 0.8) +
+  guides(colour = guide_legend(ncol = 2, byrow = TRUE),
+         shape = guide_legend(ncol = 1))
+
+ggsave(file.path(subdir, "PCA_philr_1_2.png"), p, width=6, height=6)
 
 #############
 #### RDA ####
@@ -260,12 +283,6 @@ ord <- ord_calc(phy_sp_f_clr_nohuman, constraints = species_traits, method = "RD
 # Select variables and check for collinearity
 ord_step <- step(ord@ord, scope = formula(ord@ord), test = "perm")
 vif.cca(ord_step)
-
-# Scree plot
-p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
-            xlim(paste0("RDA", 1:length(species_traits)))
-
-ggsave(file.path(subdir, "RDA_clr_nohuman_screeplot.png"), p, width=3, height=3)
 
 # Scree plot
 p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
@@ -369,6 +386,97 @@ ggsave(file.path(subdir, "RDA_pa_nohuman_taxa_1_2.png"), p, width=6, height=6)
 
 write.csv(taxa_plot(ord, phy_sp_f_pa)[["data"]], file = file.path(subdir, "RDA_pa_nohuman_taxa_scores.csv"), row.names = FALSE, quote = TRUE)
 
+#### PHILR ABUNDANCES #####
+
+phy_sp_philr <- phy_sp_philr %>%
+        ps_mutate(Domestic_sheep = (Genus == "Ovis" & Domestication == "domestic"),
+                  Feral_sheep = (Genus == "Ovis" & Domestication == "feral"),
+                  Wild_argali = (Genus == "Ovis" & Domestication == "wild"),
+                  Domestic_horse = (Genus == "Equus" & Domestication == "domestic"),
+                  Wild_zebra = (Genus == "Equus" & Domestication == "wild"),
+                  Domestic_pig = (Genus == "Sus" & Domestication == "domestic"),
+                  Wild_boar = (Genus == "Sus" & Domestication == "wild"))
+
+# Species traits to use as constraints
+species_traits <- c("Domestic_sheep", "Feral_sheep", "Wild_argali",
+                    "Domestic_horse", "Wild_zebra",
+                    "Domestic_pig", "Wild_boar")
+
+# Ordinate using all data
+ord <- ord_calc(phy_sp_philr, constraints = species_traits, method = "RDA")
+
+# Select variables and check for collinearity
+ord_step <- step(ord@ord, scope = formula(ord@ord), test = "perm")
+vif.cca(ord_step)
+
+# Scree plot
+p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
+            xlim(paste0("RDA", 1:length(species_traits)))
+
+ggsave(file.path(subdir, "RDA_philr_screeplot.png"), p, width=3, height=3)
+
+## SAMPLE PLOTS
+
+centroids <- centroids(ord@ord, phy_sp_philr)
+
+# Color by species
+p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0.8) +
+    custom_theme() +
+    geom_phylopic(data = centroids, aes(colour = Species), uuid = centroids$uid, fill = "transparent", height = 0.6) +
+    scale_colour_manual(values=species_palette, name = "Species") +
+    scale_shape_manual(values=dom_shape_palette, name = "Domestication") +
+    theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
+    guides(shape = guide_legend(ncol = 1), colour = guide_legend(ncol = 3, byrow = FALSE))
+
+p <- ggMarginal(p, type="violin", groupColour = TRUE, groupFill = TRUE, size=5)
+
+ggsave(file.path(subdir, "RDA_philr_1_2.png"), p, width=6, height=6)
+
+## Without humans
+
+phy_sp_philr_nohuman <- phy_sp_philr %>% subset_samples(Species != "Homo sapiens")
+
+# Species traits to use as constraints
+species_traits <- c("Domestic_sheep", "Feral_sheep", "Wild_argali",
+                    "Domestic_horse", "Wild_zebra",
+                    "Domestic_pig", "Wild_boar")
+
+# Ordinate using all data
+ord <- ord_calc(phy_sp_philr_nohuman, constraints = species_traits, method = "RDA")
+
+# Select variables and check for collinearity
+ord_step <- step(ord@ord, scope = formula(ord@ord), test = "perm")
+vif.cca(ord_step)
+
+# Scree plot
+p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
+            xlim(paste0("RDA", 1:length(species_traits)))
+
+ggsave(file.path(subdir, "RDA_philr_nohuman_screeplot.png"), p, width=3, height=3)
+
+# Scree plot
+p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
+            xlim(paste0("RDA", 1:length(species_traits)))
+
+ggsave(file.path(subdir, "RDA_philr_nohuman_screeplot.png"), p, width=3, height=3)
+
+## SAMPLE PLOTS
+
+centroids <- centroids(ord@ord, phy_sp_philr_nohuman)
+
+# Color by species
+p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0.8) +
+    custom_theme() +
+    geom_phylopic(data = centroids, aes(colour = Species), uuid = centroids$uid, fill = "transparent", height = 0.6) +
+    scale_colour_manual(values=species_palette, name = "Species") +
+    scale_shape_manual(values=dom_shape_palette, name = "Domestication") +
+    theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
+    guides(shape = guide_legend(ncol = 1), colour = guide_legend(ncol = 3, byrow = FALSE))
+
+p <- ggMarginal(p, type="violin", groupColour = TRUE, groupFill = TRUE, size=5)
+
+ggsave(file.path(subdir, "RDA_philr_nohuman_1_2.png"), p, width=6, height=6)
+
 ###################
 #### PERMANOVA ####
 ###################
@@ -428,34 +536,9 @@ set.seed(123)
 
 # Run PERMANOVA with all factors and only species
 perm <- adonis2(otus ~ genus * dom + reads,
-        permutations = 1000, by = "term", method = "euclidean")
+        permutations = 1000, by = "term", method = "jaccard")
 
 write.csv(as.data.frame(perm), file = file.path(subdir, "permanova_pa.csv"), row.names = TRUE, quote = TRUE)
-
-######################################
-#### PCA ORDINATION ON PHILR DATA ####
-######################################
-
-#### All data ####
-ord <- ord_calc(phy_sp_philr, method = "PCA")
-
-# Scree plot
-p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
-            xlim(c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"))
-
-ggsave(file.path(subdir, "screeplot_philr.png"), p, width=8, height=6)
-
-# Color by species
-p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0.5) +
-  custom_theme() +
-  scale_shape_manual(values=dom_shape_palette, name = "Domestication") +
-  scale_color_manual(values=species_palette, name = "Species") +
-  theme(legend.position = "bottom", legend.direction = "vertical") +
-  geom_phylopic(data = centroids(ord@ord, phy_sp_philr), aes(colour = Species), uuid = centroids(ord@ord, phy_sp_philr)$uid, width = 0.2, alpha = 0.8) +
-  guides(colour = guide_legend(ncol = 2, byrow = TRUE),
-         shape = guide_legend(ncol = 1))
-
-ggsave(file.path(subdir, "PCA_philr_1_2.png"), p, width=6, height=6)
 
 ############################
 #### DISTANCES TO HUMAN ####
@@ -504,12 +587,12 @@ write.csv(stat.test, file = file.path(subdir, "distances_to_human_clr_test.csv")
 
 stat.test <- stat.test %>% add_xy_position(x = "Domestication")
 
-p <- p +
+p_clr <- p +
   stat_pvalue_manual(
     stat.test, bracket.nudge.y = -2, hide.ns = TRUE,
     label = "{p.adj.signif}")
 
-ggsave(file.path(subdir, "distances_to_human_clr.png"), p, width=5, height=4)
+ggsave(file.path(subdir, "distances_to_human_clr.png"), p_clr, width=5, height=4)
 
 #### PhilR ####
 
@@ -552,12 +635,12 @@ write.csv(stat.test, file = file.path(subdir, "distances_to_human_philr_test.csv
 
 stat.test <- stat.test %>% add_xy_position(x = "Domestication")
 
-p <- p +
+p_philr <- p +
   stat_pvalue_manual(
     stat.test, bracket.nudge.y = 0, hide.ns = TRUE,
     label = "{p.adj.signif}")
 
-ggsave(file.path(subdir, "distances_to_human_philr.png"), p, width=5, height=4)
+ggsave(file.path(subdir, "distances_to_human_philr.png"), p_philr, width=5, height=4)
 
 #### PRESENCE ABSENCE ####
 
@@ -600,12 +683,22 @@ write.csv(stat.test, file = file.path(subdir, "distances_to_human_pa_test.csv"),
 
 stat.test <- stat.test %>% add_xy_position(x = "Domestication")
 
-p <- p +
+p_pa <- p +
   stat_pvalue_manual(
     stat.test, bracket.nudge.y = 0, hide.ns = TRUE,
     label = "{p.adj.signif}")
 
-ggsave(file.path(subdir, "distances_to_human_pa.png"), p, width=5, height=4)
+ggsave(file.path(subdir, "distances_to_human_pa.png"), p_pa, width=5, height=4)
+
+## Combine
+
+p_combined <- plot_grid(p_pa + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(), axis.title.x = element_blank()),
+                        p_clr + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(), axis.title.x = element_blank(),
+                                        strip.background = element_blank(), strip.text = element_blank()),
+                        p_philr + theme(strip.background = element_blank(), strip.text = element_blank()),
+                        ncol = 1, align = "v", axis = "lr", rel_heights = c(1, 1, 1.2))
+
+ggsave(file.path(subdir, "distances_to_human_combined.png"), p_combined, width=5, height=8)
 
 ##########################
 #### PHYLOPICS LEGEND ####

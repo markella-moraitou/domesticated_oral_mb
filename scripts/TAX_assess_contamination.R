@@ -88,19 +88,17 @@ phy_sp_m <- phy_sp_r %>% psmelt
 # Is a taxons abundance higher in samples or negative controls on average
 abundance_ratios <- 
             phy_sp_m %>%
-            # Indicate when a genus is in the common contaminant list
-            mutate(common.contam = genus %in% common_contams$Contaminant_genera) %>%
             # Get mean abundance per OTU in samples, controls and blanks
             group_by(OTU) %>%
             mutate(Species = case_when(is.neg ~ "negative",
                                        !is.neg ~ Species)) %>%
-            group_by(OTU, Species, common.contam) %>%
+            group_by(OTU, Species) %>%
             # Get average abundance negatives and weighted average abundance in samples
             summarise(mean_abundance = mean(Abundance)) %>% ungroup %>%
             # Fill NAs with 0
             mutate(mean_abundance = replace(mean_abundance, is.na(mean_abundance), 0)) %>%
             # Calculate mean species-weighted abundance in samples
-            group_by(OTU, common.contam) %>%
+            group_by(OTU) %>%
             summarise(mean_abundance_samples = mean(mean_abundance[Species != "negative"]),
                       mean_abundance_negs = mean(mean_abundance[Species == "negative"])) %>%
             # Only keep OTUs that are present in both samples and negatives
@@ -109,7 +107,7 @@ abundance_ratios <-
             mutate(mean_abundance_negs = mean_abundance_negs + 1e-6) %>%
             ungroup %>%
             # Get ratios of mean abundances
-            mutate(mean_ratio = mean_abundance_samples/mean_abundance_negs) %>% select(OTU, common.contam, mean_ratio)
+            mutate(mean_ratio = mean_abundance_samples/mean_abundance_negs) %>% select(OTU, mean_ratio)
 
 otu_order <- abundance_ratios %>% arrange(mean_ratio) %>% pull(OTU)
 
@@ -121,29 +119,15 @@ abundance_ratios <- abundance_ratios %>% arrange(OTU)
 ythresh <- abundance_ratios %>% filter(mean_ratio > s_b_ratio) %>% slice_min(mean_ratio, n = 1) %>% pull(OTU)
 
 # Plot
-p_a <- ggplot(abundance_ratios, aes(x = mean_ratio, y = OTU, fill = common.contam)) +
+p_a <- ggplot(abundance_ratios, aes(x = mean_ratio, y = OTU)) +
   geom_bar(stat = "identity") +
   theme(legend.position="top") +
   ylab("OTU") +
-  scale_fill_manual(values = c("TRUE" = "#FF5733", "FALSE" = "grey")) +
   scale_x_continuous(name = "average ratio in\nsamples/negatives",
                     trans = "log10", breaks = c(0.01, 1, 100)) +
   geom_vline(xintercept = s_b_ratio, linetype = "dashed") +
   geom_hline(yintercept = ythresh, linetype = "dashed") +
   theme(axis.text.y = element_blank(), axis.ticks.x = element_blank(), legend.position = "none")
-
-## Plot mean ratio distribution
-abundance_ratios <- abundance_ratios %>%
-                     mutate(group = case_when(str_remove(OTU, " .*") %in% c("Streptococcus", "Actinomyces", "Pseudomonas", "Propionibacterium") ~ "oral and contam",
-                                              common.contam ~ "contam",
-                                              TRUE ~ "other"))
-
-p <- ggplot(abundance_ratios, aes(x = mean_ratio, fill = group)) +
-  geom_histogram() +
-  scale_x_log10() +
-  scale_fill_manual(values = c("contam" = "#FF5733", "oral and contam" = "yellow", "other" = "grey"))
-
-ggsave(file=file.path(subdir, "abundance_ratio_distribution.png"), p, width=6, height=4)
 
 ##### PREVALENCE AND AVERAGE RELATIVE ABUNDANCE ####
 # Get prevalence of OTU in samples, controls and blanks
@@ -176,13 +160,14 @@ prevalence_summ <- prevalence %>%
             min = min(prevalence, na.rm = TRUE),
             max = max(prevalence, na.rm = TRUE))
 
-p_p <- ggplot(prevalence_summ, aes(x = mean, fill = mean, y = OTU)) +
+p_p <- ggplot(prevalence_summ, aes(x = mean, colour = mean, y = OTU)) +
   geom_errorbar(aes(xmin = q1, xmax = q3), linewidth = 0.5, colour = "grey") +
-  geom_point(aes(colour = mean, alpha = 0.5)) +
+  geom_point(aes(colour = mean), alpha = 0.5) +
   geom_hline(yintercept = ythresh, linetype = "dashed") +
-  scale_colour_viridis_c(option = "magma") + xlab("\nprevalence per\nhost species") +
+  scale_colour_viridis_c(option = "magma", breaks = c(0.25, 0.5, 0.75)) + xlab("\nprevalence per\nhost species") +
   geom_vline(xintercept = prev_thresh, linetype = "dashed") +
-  theme(legend.position="top", axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+  theme(legend.position="top", legend.text = element_text(angle = 90), legend.title = element_blank(),
+        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
         axis.title.y = element_blank(), , axis.title.x.top = element_text())
 
 abundance_df <-
@@ -224,8 +209,9 @@ p_d <- ggplot(damage_df, aes(x = median + 0.01, y = OTU)) +
             position = position_jitter(width = 0.05)) +
   geom_hline(yintercept = ythresh, linetype = "dashed") +
   scale_x_continuous(trans = "log10") +
-  scale_colour_viridis_c(option = "turbo", trans = "log10") + xlab("\ndamage patterns\n(damage_model_pmax)") +
-  theme(legend.position="top", axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+  scale_colour_viridis_c(option = "turbo", trans = "log10", breaks = c(0.01, 0.03, 0.1)) + xlab("\ndamage patterns\n(damage_model_pmax)") +
+  theme(legend.position="top", legend.text = element_text(angle = 90), legend.title = element_blank(),
+        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
         axis.title.y = element_blank(), axis.title.x.top = element_text())
 
 #### Previous information: is that taxon in common contaminant lists
@@ -245,10 +231,12 @@ p_c <- ggplot(pivot_longer(contam_list, cols = c(Weyrich2019, Salter2014, previo
                           names_to = "Source", values_to = "Present"),
             aes(x = Source, y = OTU)) +
      geom_tile(aes(fill = Present)) +
-     scale_fill_manual(values = c(`TRUE` = "red", `FALSE` = "white"), name = "Present in contaminant list") +
+       geom_hline(yintercept = ythresh, linetype = "dashed") +
+     scale_fill_manual(values = c(`TRUE` = "red", `FALSE` = "white"), name = "Previous\nidentified\nas contaminant") +
      theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
            axis.title.y = element_blank(), axis.title.x = element_blank(),
-           legend.position = "top")
+           legend.position = "top", legend.text = element_text(angle = 90), legend.title.position = "top") +
+      guides(fill = guide_legend(override.aes = list(colour = "black")))
 
 #### Combine all tables ####
 
@@ -268,10 +256,10 @@ write.table(assess_taxa, file=file.path(subdir, "assess_taxa.csv"), sep=",", row
 #### Plot ####
 p <- plot_grid(p_a + theme(legend.position="none"),
                p_ma + theme(legend.position="none"),
-               p_p + theme(legend.position="none"),
-               p_d + theme(legend.position="none"),
-               p_c + theme(legend.position="none"),
-               nrow = 1, align = "h", axis = "tb", rel_widths = c(0.75, 0.75, 1))
+               p_p + theme(legend.position="top", legend.key.width = unit(0.5, "cm")),
+               p_d + theme(legend.position="top", legend.key.width = unit(0.5, "cm")),
+               p_c + theme(legend.position="top", legend.key.width = unit(0.5, "cm"), legend.key.height = unit(0.05, "cm")),
+               nrow = 1, align = "h", axis = "tb", rel_widths = c(0.75, 0.75, 0.75, 1, 0.75))
 
 ggsave(file=file.path(subdir, "assess_taxa.png"), p, width=10, height=12)
 
@@ -487,8 +475,6 @@ shallow_samples <- assess_samples %>% filter(!passed_min_reads & !is.neg) %>% pu
 
 write.csv(contaminated_samples, file = file.path(subdir, "contaminated_samples.csv"), quote = FALSE, row.names = FALSE)
 write.csv(shallow_samples, file = file.path(subdir, "shallow_samples.csv"), quote = FALSE, row.names = FALSE)
-
-shallow_samples <- which(sample_sums(phy_sp) < min_samp) %>% names
 
 phy_sp_f <- prune_samples(!(sample_names(phy_sp) %in% shallow_samples), phy_sp)
 phy_sp_f <- prune_samples(!(sample_names(phy_sp_f) %in% contaminated_samples), phy_sp_f)

@@ -14,12 +14,8 @@ library(vegan)
 library(rphylopic)
 library(ape)
 library(picante)
-library(phyr)
-library(phytools)
-library(MCMCglmm)
 library(parallel)
-library(ggtree)
-library(ggtreeExtra)
+library(ggpubr)
 
 #### VARIABLES AND WORKING DIRECTORY ####
 
@@ -87,7 +83,11 @@ for (s in seq(0, max, by=step)) {
 metadata <- data.frame(Sample = sample_names(phy_sp_f),
                         lib_size = sample_sums(phy_sp_f),
                         Species = phy_sp_f@sam_data$Species,
-                        stringsAsFactors = FALSE)
+                        Domestication = phy_sp_f@sam_data$Domestication,
+                        stringsAsFactors = FALSE) %>%
+            mutate(Species_short = str_replace(Species, "[a-z]+ ", ". ")) %>%
+            arrange(Domestication, Species_short) %>%
+            mutate(Species_short = factor(Species_short, levels = unique(Species_short)))
 
 # Don't show subsamples larger than the achieved library size
 rare_results_filt <- rare_results %>% left_join(metadata, by = "Sample") %>%
@@ -98,7 +98,7 @@ write.csv(rare_results_filt, file.path(subdir, "rarefaction_results_filt.csv"), 
 species_medians <-
   # Get the average species richness at max subsample
   rare_results_filt %>%
-  group_by(Species) %>%
+  group_by(Species, Species_short) %>%
   filter(subsample == max(rare_results_filt$subsample)) %>%
   summarise(median_S = mean(S)) %>%
   # add phylopic info
@@ -112,13 +112,13 @@ p <- ggplot(rare_results_filt) +
                      height = max(rare_results_filt$S)*1.5, color = Species),
                  alpha = 0.8, vjust = 0, hjust = 0, remove_background = FALSE) +
   scale_color_manual(values=species_palette, name = "Species") +
-  facet_grid(~ Species) +
+  facet_grid(~ Species_short) +
   theme(legend.position = "none") +
   xlab("Number of sequences sampled") +
   ylab("Observed species richness") +
   theme(legend.position = "none")
 
-ggsave(file.path(subdir, "rarefaction_curves_filt.png"), p, width=8, height=8)
+ggsave(file.path(subdir, "rarefaction_curves_filt.png"), p, width=8, height=6)
 
 #### Raw dataset ####
 
@@ -147,7 +147,11 @@ for (s in seq(0, max, by=step)) {
 metadata <- data.frame(Sample = sample_names(phy_sp),
                         lib_size = sample_sums(phy_sp),
                         Species = phy_sp@sam_data$Species,
-                        stringsAsFactors = FALSE)
+                        Domestication = phy_sp@sam_data$Domestication,
+                        stringsAsFactors = FALSE) %>%
+            mutate(Species_short = str_replace(Species, "[a-z]+ ", ". ")) %>%
+            arrange(Domestication, Species_short) %>%
+            mutate(Species_short = factor(Species_short, levels = unique(Species_short)))
 
 # Don't show subsamples larger than the achieved library size
 rare_results_filt <- rare_results %>% left_join(metadata, by = "Sample") %>%
@@ -158,7 +162,7 @@ write.csv(rare_results_filt, file.path(subdir, "rarefaction_results_raw.csv"), r
 species_medians <-
   # Get the average species richness at max subsample
   rare_results_filt %>%
-  group_by(Species) %>%
+  group_by(Species, Species_short) %>%
   filter(subsample == max(rare_results_filt$subsample)) %>%
   summarise(median_S = mean(S)) %>%
   # add phylopic info
@@ -172,13 +176,13 @@ p <- ggplot(rare_results_filt) +
                      width = max(rare_results_filt$S), color = Species),
                  alpha = 0.8, vjust = 0, hjust = 0) +
   scale_color_manual(values=species_palette, name = "Species") +
-  facet_grid(~ Species) +
+  facet_grid(~ Species_short) +
   theme(legend.position = "none") +
   xlab("Number of sequences sampled") +
   ylab("Observed species richness") +
   theme(legend.position = "none")
 
-ggsave(file.path(subdir, "rarefaction_curves_raw.png"), p, width=8, height=8)
+ggsave(file.path(subdir, "rarefaction_curves_raw.png"), p, width=8, height=6)
 
 #########################
 #### ALPHA DIVERSITY ####
@@ -212,7 +216,10 @@ alpha_div <- alpha_div %>%
   left_join(data.frame(phy_sp_f@sam_data) %>%
               rownames_to_column(var = "Sample") %>%
               select(Sample, Species, Genus, Group, Common.name, Domestication, contig_reads_count),
-            by = c("Sample"))
+            by = c("Sample")) %>%
+            mutate(Group = str_to_lower(Group)) %>%
+            arrange(Domestication, Species) %>%
+            mutate(Group = factor(Group, levels = unique(Group)))
 
 write.csv(alpha_div, file = file.path(subdir, "alpha_diversity.csv"), quote = FALSE, row.names = FALSE)
 
@@ -222,52 +229,48 @@ p <- ggplot(alpha_div, aes(x=Group, y=filt)) +
   geom_boxplot(aes(fill=Species)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=species_palette, name = "Species") +
-  scale_x_discrete(labels = setNames(phy_sp_f@sam_data$Group, phy_sp_f@sam_data$Species)) +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
   theme(legend.position = "none", axis.title.y = element_blank()) +
   ylab("Observed species richness") +
   coord_flip()
 
-ggsave(file.path(subdir, "alpha_diversity_filt.png"), p, width=8, height=6)
+ggsave(file.path(subdir, "alpha_diversity_filt.png"), p, width=5, height=5)
 
 # Filtered & Rarefied
 p <- ggplot(alpha_div, aes(x=Group, y=filt_rarefied)) +
   geom_boxplot(aes(fill=Species)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=species_palette, name = "Species") +
-  scale_x_discrete(labels = setNames(phy_sp_f@sam_data$Group, phy_sp_f@sam_data$Species)) +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
   theme(legend.position = "none", axis.title.y = element_blank()) +
   ylab("Observed species richness (after rarefaction)") +
   coord_flip()
 
-ggsave(file.path(subdir, "alpha_diversity_filt_rarefied.png"), p, width=8, height=6)
+ggsave(file.path(subdir, "alpha_diversity_filt_rarefied.png"), p, width=5, height=5)
 
 # Raw
 p <- ggplot(alpha_div, aes(x=Group, y=raw)) +
   geom_boxplot(aes(fill=Species)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=species_palette, name = "Species") +
-  scale_x_discrete(labels = setNames(phy_sp_f@sam_data$Group, phy_sp_f@sam_data$Species)) +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
   theme(legend.position = "none", axis.title.y = element_blank()) +
   ylab("Observed species richness") +
   coord_flip()
 
-ggsave(file.path(subdir, "alpha_diversity_raw.png"), p, width=8, height=6)
+ggsave(file.path(subdir, "alpha_diversity_raw.png"), p, width=5, height=5)
 
 # Raw & Rarefied
 p <- ggplot(alpha_div, aes(x=Group, y=raw_rarefied)) +
   geom_boxplot(aes(fill=Species)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=species_palette, name = "Species") +
-  scale_x_discrete(labels = setNames(phy_sp_f@sam_data$Group, phy_sp_f@sam_data$Species)) +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
   theme(legend.position = "none", axis.title.y = element_blank()) +
   ylab("Observed species richness (after rarefaction)") +
   coord_flip()
 
-ggsave(file.path(subdir, "alpha_diversity_raw_rarefied.png"), p, width=8, height=6)
+ggsave(file.path(subdir, "alpha_diversity_raw_rarefied.png"), p, width=5, height=5)
 
 ####################
 #### FAITH'S PD ####
@@ -298,7 +301,7 @@ p <- ggplot(phy_div, aes(x=Group, y=PD)) +
   ylab("Faith's PD") +
   coord_flip()
 
-ggsave(file.path(subdir, "phylogenetic_diversity.png"), p, width=8, height=6)
+ggsave(file.path(subdir, "phylogenetic_diversity.png"), p, width=5, height=5)
 
 # Plot relationship between PD and species richness
 p <- ggplot(phy_div, aes(x=SR, y=PD)) +
@@ -312,14 +315,14 @@ p <- ggplot(phy_div, aes(x=SR, y=PD)) +
   guides(colour = guide_legend(ncol = 2, byrow = TRUE)) +
   xlab("Observed species richness (after rarefaction)") + ylab("Faith's PD (after rarefaction)")
 
-ggsave(file.path(subdir, "alpha_vs_pd.png"), width=6, height=6)
+ggsave(file.path(subdir, "alpha_vs_pd.png"), width=5, height=5)
 
 ###################
 #### RUN TESTS ####
 ###################
 
 # Combine with alpha diversity
-div <- full_join(select(alpha_div, c(Sample, filt, filt_rarefied, raw_rarefied)),
+div <- full_join(select(alpha_div, c(Sample, filt, filt_rarefied, raw_rarefied, contig_reads_count)),
                   select(phy_div, c(-SR)), by = "Sample")
 
 write.csv(div, file = file.path(subdir, "diversity.csv"), quote = FALSE, row.names = FALSE)
@@ -337,8 +340,10 @@ summary(residuals(model))
 
 write.csv(res, file = file.path(subdir, "anova_alpha_diversity_filt.csv"), quote = FALSE)
 
+model_signif <- aov(filt_rarefied ~ Genus + Genus:Domestication, data = div_filt)
+
 # Tukey's HSD
-tukey <- do.call("rbind", TukeyHSD(model)) %>% data.frame %>% filter(!is.na(diff))
+tukey <- do.call("rbind", TukeyHSD(model_signif)) %>% data.frame %>% filter(!is.na(diff))
 
 # For the interactions, keep only those comparing domestication within genera
 # As well as comparisons with humans

@@ -197,7 +197,7 @@ custom_ord_plot <- function(phyloseq, ordination, colour_var, shape_var, arrows_
   # Add more layers
   p <- p +
     theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
-    guides(shape = guide_legend(ncol = 1), colour = guide_legend(ncol = 1))
+    guides(shape = guide_legend(ncol = 1), colour = guide_legend(ncol = 3, byrow = FALSE))
   # If PCA, add taxon arrows
   if (type == "PCA") {
     p <- p +

@@ -89,7 +89,7 @@ meta$Species <- factor(meta$Species, levels=spe_levels)
 # Distinguish between fully domestic and feral sheep
 meta$Group <- ifelse(meta$Species == "Ovis aries", 
                     paste(meta$Domestication, "sheep", sep = " "),
-                    meta$Common.name)
+                    str_to_lower(meta$Common.name))
 
 group_levels <- meta %>% arrange(Genus, Domestication, Group) %>% pull(Group) %>% unique
 
