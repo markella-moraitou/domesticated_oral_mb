@@ -190,22 +190,36 @@ res_filt <- res %>% filter(taxon %in% signif_taxa) %>%
             mutate(dataset = gsub(" vs ", "\nvs ", dataset)) %>%
             mutate(dataset = factor(dataset, levels = c("Domestic\nvs Wild (All)", "Horse\nvs Zebra", "Sheep\nvs Argali", "Pig\nvs Boar",  "Human\nvs Wild")))
 
+# Remove taxa that appear only in the humans vs wild comparison
+human_v_wild_only <- setdiff(
+    res_filt %>% filter(dataset == "Human\nvs Wild") %>% pull(taxon),
+    res_filt %>% filter(!dataset == "Human\nvs Wild") %>% pull(taxon)
+)
+
+res_filt <- res_filt %>% filter(!taxon %in% human_v_wild_only)
+
 # Plot heatmap
 p <- ggplot(data = res_filt, aes(x = dataset, y = taxon, fill = lfc)) +
     geom_tile() +
     scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, name = "Log-fold change", na.value = "transparent") +
     geom_text(aes(label = signif), color = "black", size = 3) +
-    theme(legend.position = "top", legend.text = element_text(angle = 45, vjust = 0.5),
+    theme(legend.position = "top", legend.text = element_text(angle = 90, vjust = 0.5, size = 10),
+          legend.title = element_text(size = 10),
           panel.background = element_rect(fill = "grey90"), panel.grid = element_blank(),
-          axis.text.y = element_text(size = 8))
+          axis.text.y = element_text(size = 8), axis.title.y = element_blank(), axis.title.x = element_blank()) +
+    guides(fill = guide_colorbar(barwidth = unit(2, "cm"), barheight = unit(0.5, "cm")))
 
-ggsave(p, filename = file.path(subdir, "ancom_res_heatmap.png"), width = 6, height = 10)
+ggsave(p, filename = file.path(subdir, "ancom_res_heatmap.png"), width = 4, height = 6)
 
 # Also plot lfc's as scatterplots to show if they correlate
 data_palette <- darken(species_palette[c("Equus quagga", "Ovis ammon", "Sus scrofa", "Homo sapiens")])
 names(data_palette) <- c("Horse\nvs Zebra", "Sheep\nvs Argali", "Pig\nvs Boar",  "Human\nvs Wild")
 
+# Maintain taxon order
+taxon_order = levels(res_filt$taxon)
+
 p <- filter(res_filt, c(!dataset %in% c("Domestic\nvs Wild (All)", "Human\nvs Wild"))) %>%
+    mutate(taxon = factor(taxon, levels = taxon_order)) %>%
     ggplot(aes(y = taxon, x = lfc)) +
     geom_vline(xintercept = 0, linewidth = 0.3, colour = "grey60") +
     geom_point(aes(colour = dataset, shape = dataset), size = 3, alpha = 0.8) +
@@ -215,7 +229,59 @@ p <- filter(res_filt, c(!dataset %in% c("Domestic\nvs Wild (All)", "Human\nvs Wi
     theme(legend.position = "top", axis.text.y = element_text(size = 8)) +
     xlab("Log-fold change in domestic animals")
 
-ggsave(p, filename = file.path(subdir, "ancom_lfc_comparison.png"), width = 6, height = 10)
+ggsave(p, filename = file.path(subdir, "ancom_lfc_comparison.png"), width = 4, height = 6)
+
+# Correlation test of lfc's between datasets
+res_wide <- res %>%
+    mutate(dataset = str_replace(dataset, "\n", " ")) %>%
+    pivot_wider(id_cols = "taxon", names_from = dataset, values_from = lfc)
+
+lfc_correlations = data.frame(
+    Dataset1 = character(),
+    Dataset2 = character(),
+    Correlation = numeric(),
+    P_value = numeric(),
+    samples = integer()
+)
+
+datasets = res_filt$dataset %>% levels %>% str_replace_all(., "\n", " ")
+datasets = datasets[datasets != "Domestic vs Wild (All)"]
+
+for (d1 in datasets) {
+  for (d2 in datasets) {
+      # Keep only data for which there are lfc estimates in both datasets
+      data <- res_wide[ , c("taxon", d1, d2)]
+      data <- data[complete.cases(data), ]
+      cases = data$taxon %>% unique %>% length
+      cor_test <- cor.test(x = data[[d1]], y = data[[d2]])
+      lfc_correlations <- rbind(lfc_correlations, data.frame(
+          Dataset1 = d1,
+          Dataset2 = d2,
+          Correlation = cor_test$estimate,
+          P_value = cor_test$p.value,
+          samples = cases)
+      )
+  }
+}
+
+lfc_correlations$signif <- case_when(lfc_correlations$P_value < 0.001 ~ "***",
+                                      lfc_correlations$P_value < 0.01 ~ "**",
+                                      lfc_correlations$P_value < 0.05 ~ "*",
+                                      lfc_correlations$P_value < 0.1 ~ ".",
+                                      TRUE ~ "")
+
+lfc_correlations$Dataset1 <- factor(lfc_correlations$Dataset1, levels = datasets)
+lfc_correlations$Dataset2 <- factor(lfc_correlations$Dataset2, levels = rev(datasets))
+
+write.csv(lfc_correlations, file.path(subdir, "ancom_lfc_correlations.csv"), quote = FALSE, row.names = FALSE)
+
+p <- ggplot(aes(x = Dataset1, y = Dataset2, fill = Correlation), data = filter(lfc_correlations, Dataset1!=Dataset2)) +
+    geom_tile() +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, name = "LFC Correlation", na.value = "transparent") +
+    geom_text(aes(label = signif), color = "black", size = 5) +
+    theme(axis.title = element_blank())
+
+ggsave(p, filename = file.path(subdir, "ancom_lfc_correlation_heatmap.png"), width = 6, height = 5)
 
 #########################
 #### PLOT ABUNDANCES ####
