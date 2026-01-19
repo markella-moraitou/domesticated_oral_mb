@@ -282,6 +282,50 @@ p <- ggplot(data = arrows_filt) +
 
 ggsave(p, filename = file.path(subdir, "pathway_ordination_arrows.png"), width=6, height=5)
 
+###################
+#### PERMANOVA ####
+###################
+
+# Remove humans for permanova analyses
+
+#### PATHWAYS ####
+
+# Explanatory variables
+otus <- t(as.data.frame(subset_samples(phy_pathway_clr, Species != "Homo sapiens")@otu_table))
+
+sample_data <- as.data.frame(subset_samples(phy_pathway_clr, Species != "Homo sapiens")@sam_data)
+
+genus <- sample_data$Genus
+dom <- sample_data$Domestication
+reads <- sample_data$contig_reads_count
+
+set.seed(123)
+
+# Run PERMANOVA with all factors and only species
+perm <- adonis2(otus ~ genus * dom + reads,
+        permutations = 1000, by = "term", method = "euclidean")
+
+write.csv(as.data.frame(perm), file = file.path(subdir, "permanova_clr_pathways.csv"), row.names = TRUE, quote = TRUE)
+
+### GENES ###
+
+# Explanatory variables
+otus <- t(as.data.frame(subset_samples(phy_gene_f_clr, Species != "Homo sapiens")@otu_table))
+
+sample_data <- as.data.frame(subset_samples(phy_gene_f_clr, Species != "Homo sapiens")@sam_data)
+
+genus <- sample_data$Genus
+dom <- sample_data$Domestication
+reads <- sample_data$contig_reads_count
+
+set.seed(123)
+
+# Run PERMANOVA with all factors and only species
+perm <- adonis2(otus ~ genus * dom + reads,
+        permutations = 1000, by = "term", method = "euclidean")
+
+write.csv(as.data.frame(perm), file = file.path(subdir, "permanova_clr_genes.csv"), row.names = TRUE, quote = TRUE)
+
 ############################
 #### DISTANCES TO HUMAN ####
 ############################
