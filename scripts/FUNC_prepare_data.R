@@ -118,7 +118,7 @@ annot_mod <- annot_str %>%
     filter(!species %in% contam)
 
 annot_mod <- annot_mod %>%
-        # Remove _[A-Z] from taxon names
+        # Remove _[A-Z] from phylum names
         mutate(phylum = str_remove_all(phylum, "_[A-Z]+")) %>%
         # For CAZY annotations, remove the subcategories and keep only the two top level categories
         # If this leads to two different descriptions in the same category, revert to long name
@@ -252,7 +252,7 @@ prevalence <- t(prevalence) %>% data.frame %>% arrange(desc(rowSums(.))) %>%
 
 write.csv(prevalence, file.path(subdir, "gene_prevalence_per_species.csv"), quote = FALSE)
 
-# Identify taxa that have at least 20% prevalence in a single species
+# Identify genes that have at least 20% prevalence in a single species
 low_prevalence_genes <- prevalence %>%
   rowwise() %>%
   filter(all(c_across(where(is.numeric)) < 0.2)) %>%

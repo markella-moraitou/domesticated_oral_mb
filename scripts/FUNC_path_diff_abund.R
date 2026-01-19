@@ -69,7 +69,7 @@ phy_ancom@sam_data$Domestication <- factor(phy_ancom@sam_data$Domestication, lev
 ancom_all <- ancombc2(data = phy_ancom,
                fix_formula = "Domestication + Genus",
                tax_level = "path_name", 
-               p_adj_method = "holm", prv_cut = 0,
+               p_adj_method = "holm", prv_cut = 0.1,
                group="Domestication",
                struc_zero = FALSE,
                lib_cut = 0,
@@ -84,7 +84,7 @@ phy_equus <- phy_equus %>% prune_taxa(taxa_sums(phy_equus) > 0, .)
 ancom_equus <- ancombc2(data = phy_equus,
                fix_formula = "Domestication", 
                tax_level = "path_name", 
-               p_adj_method = "holm", prv_cut = 0,
+               p_adj_method = "holm", prv_cut = 0.1,
                group="Domestication",
                struc_zero = FALSE,
                lib_cut = 0,
@@ -99,7 +99,7 @@ phy_ovis <- phy_ovis %>% prune_taxa(taxa_sums(phy_ovis) > 0, .)
 ancom_ovis <- ancombc2(data = phy_ovis,
                fix_formula = "Domestication",
                tax_level = "path_name",
-               p_adj_method = "holm", prv_cut = 0,
+               p_adj_method = "holm", prv_cut = 0.1,
                struc_zero = FALSE,
                lib_cut = 0,
                verbose = TRUE)
@@ -114,7 +114,7 @@ phy_sus <- phy_sus %>% prune_taxa(taxa_sums(phy_ovis) > 0, .)
 ancom_sus <- ancombc2(data = phy_sus,
                fix_formula = "Domestication",
                tax_level = "path_name",
-               p_adj_method = "holm", prv_cut = 0,
+               p_adj_method = "holm", prv_cut = 0.1,
                group="Domestication",
                struc_zero = FALSE,
                lib_cut = 0,
@@ -133,7 +133,7 @@ phy_human@sam_data$Domestication <- factor(phy_human@sam_data$Domestication, lev
 ancom_human <- ancombc2(data = phy_human,
                fix_formula = "Domestication",
                tax_level = "path_name",
-               p_adj_method = "holm", prv_cut = 0,
+               p_adj_method = "holm", prv_cut = 0.1,
                group="Domestication",
                struc_zero = FALSE,
                lib_cut = 0,
@@ -158,7 +158,7 @@ res <- lapply(list(ancom_all$res, ancom_equus$res, ancom_ovis$res, ancom_sus$res
                 rename_with(., ~str_remove_all(., "_Domesticationdomestic") %>% str_remove_all(., "_Domesticationhuman"))
                 }) %>% bind_rows()
 
-write.csv(res, file.path(subdir, "ancom_res.csv"), quote = FALSE, row.names = FALSE)
+write.csv(res, file.path(subdir, "ancom_res_func.csv"), quote = TRUE, row.names = FALSE)
 
 # Keep only taxa that are differentially abundant in any of the analyses
 signif_taxa <- res %>% filter(q < 0.05 & passed_ss) %>% pull(taxon) %>% unique
@@ -185,27 +185,35 @@ p <- ggplot(data = res_filt, aes(x = dataset, y = taxon, fill = lfc)) +
     geom_tile() +
     scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, name = "Log-fold change", na.value = "transparent") +
     geom_text(aes(label = signif), color = "black", size = 3) +
-    theme(legend.position = "top", legend.text = element_text(angle = 45, vjust = 0.5),
+    theme(legend.position = "top", legend.text = element_text(angle = 90, vjust = 0.5, size = 10),
+          legend.title = element_text(size = 10),
           panel.background = element_rect(fill = "grey90"), panel.grid = element_blank(),
-          axis.text.y = element_text(size = 8))
+          axis.text.y = element_text(size = 8), axis.title.y = element_blank(), axis.title.x = element_blank()) +
+    guides(fill = guide_colorbar(barwidth = unit(2, "cm"), barheight = unit(0.5, "cm")))
 
-ggsave(p, filename = file.path(subdir, "ancom_res_heatmap.png"), width = 6, height = 10)
+ggsave(p, filename = file.path(subdir, "ancom_res_heatmap.png"), width = 5, height = 5)
 
 # Also plot lfc's as scatterplots to show if they correlate
 data_palette <- darken(species_palette[c("Equus quagga", "Ovis ammon", "Sus scrofa", "Homo sapiens")])
 names(data_palette) <- c("Horse\nvs Zebra", "Sheep\nvs Argali", "Pig\nvs Boar",  "Human\nvs Wild")
 
-p <- filter(res_filt, c(!dataset %in% c("Domestic\nvs Wild (All)", "Human\nvs Wild"))) %>%
+p <- filter(res_filt, c(dataset != "Domestic\nvs Wild (All)")) %>%
+    mutate(signif = case_when(signif != "" ~ "*")) %>%
     ggplot(aes(y = taxon, x = lfc)) +
     geom_vline(xintercept = 0, linewidth = 0.3, colour = "grey60") +
-    geom_point(aes(colour = dataset, shape = dataset), size = 3, alpha = 0.8) +
+    geom_point(aes(colour = dataset, shape = dataset), size = 4, alpha = 0.8) +
     geom_line(aes(group = taxon), linetype = "dotted", size = 0.3) +
-    scale_colour_manual(values = data_palette, name = "Dataset") +
-    scale_shape_manual(values = c(0, 2, 4), name = "Dataset") +
-    theme(legend.position = "top", axis.text.y = element_text(size = 8)) +
-    xlab("Log-fold change in domestic animals")
+    geom_text(aes(label = signif, colour = dataset)) +
+    scale_colour_manual(values = data_palette, name = "") +
+    scale_shape_manual(values = c(0, 2, 4, 1), name = "") +
+    theme(legend.position = "top", legend.text = element_text(angle = 90, vjust = 0.5, size = 10),
+          legend.title = element_text(size = 10), axis.title.y = element_blank()) +
+    xlab("Log-fold change\nin domestic animals") +
+    # remove label aes from legend
+    guides(colour = guide_legend(override.aes = list(label = "")),
+           shape = guide_legend(override.aes = list(label = "")))
 
-ggsave(p, filename = file.path(subdir, "ancom_lfc_comparison.png"), width = 6, height = 10)
+ggsave(p, filename = file.path(subdir, "ancom_lfc_comparison.png"), width = 6, height = 4)
 
 #########################
 #### PLOT ABUNDANCES ####
@@ -246,4 +254,4 @@ p <- ggplot(ancom_abund, aes(x = Group, y = Abundance, fill = Species, colour = 
           legend.position = "bottom") + ylab("CLR-transformed abundances") +
     guides(fill=guide_legend(nrow=2,byrow=TRUE))
 
-ggsave(p, filename = file.path(subdir, "ancom_abundances.png"), width = 10, height = 10)
+ggsave(p, filename = file.path(subdir, "ancom_abundances.png"), width = 10, height = 8)
