@@ -65,7 +65,7 @@ map_stats_meta <- map_stats %>%
     # Get bin label and completeness
     inner_join(bin_meta[,c("bin", "label", "Completeness", "Contamination")]) %>%
     # Label the sample where a bin was assembled from
-    mutate(assembly_sample = case_when(sample == str_remove(str_remove(bin, "^.*-"), "\\..*$") ~ TRUE,
+    mutate(assembly_sample = case_when(sample == str_remove(str_remove(bin, "^.*-"), "\\.[0-9].*$") ~ TRUE,
                                        TRUE ~ FALSE)) %>%
     rename(host_species = Species, host_genus = Genus)
 
