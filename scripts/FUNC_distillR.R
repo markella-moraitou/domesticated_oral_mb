@@ -14,6 +14,8 @@ library(stringr)
 library(phyloseq)
 library(ggplot2)
 library(ggExtra)
+library(microViz)
+library(rphylopic)
 library(RColorBrewer)
 library(distillR)
 
@@ -45,6 +47,8 @@ phy_gene_f <- readRDS(file.path(datadir, "phy_gene_f.RDS"))
 gene_str <- read.table(file.path(datadir, "gene_abundance_stratified_modified.tsv"),
                       quote = "", comment.char = "", header = TRUE, sep = "\t")
 
+phylopics <- read.csv(file.path(indir, "palettes", "phylopics.csv"), stringsAsFactors = FALSE)
+
 ################################
 #### DISTILL COMMUNITY WIDE ####
 ################################
@@ -57,7 +61,7 @@ if(file.exists(file.path(subdir, "GIFTs_community.csv"))) {
 } else {
   # Prep input for distillR
   data <- psmelt(phy_gene_f) %>% select(OTU, Sample, gene_name, Abundance, Total_abundance) %>%
-      # Remove zero abundances and samples with low read depth
+      # Remove zero abundances
       filter(Abundance > 0)
   cat("Running distillR to get GIFTs\n")
   GIFTs <- distill(data, GIFT_db, genomecol=2, annotcol=c(1, 3))
@@ -112,55 +116,117 @@ ggsave(p, filename = file.path(subdir, "GIFTs_functions_community.png"), width =
 
 write.csv(GIFTs_functions_long, file.path(subdir, "GIFTs_functions_long.csv"), row.names = FALSE)
 
-#### PCA ####
-# Remove AMR genes
+#############
+#### RDA ####
+#############
 
-amr <- GIFTs_elements_long %>% filter(Function == "Antibiotic degradation") %>% pull(Code_element) %>% unique
+# Add GIFT elemens to a phyloseq and get host groups as separate variables
+phy_distillr <- phyloseq(sample_data(phy_gene_f), otu_table(GIFTs_elements, taxa_are_rows = FALSE))
 
-GIFTs_elements <- GIFTs_elements[, !colnames(GIFTs_elements) %in% amr] # Remove AMR genes
+phy_distillr <- phy_distillr %>%
+        ps_mutate(Domestic_sheep = (Genus == "Ovis" & Domestication == "domestic"),
+                  Feral_sheep = (Genus == "Ovis" & Domestication == "feral"),
+                  Wild_argali = (Genus == "Ovis" & Domestication == "wild"),
+                  Domestic_horse = (Genus == "Equus" & Domestication == "domestic"),
+                  Wild_zebra = (Genus == "Equus" & Domestication == "wild"),
+                  Domestic_pig = (Genus == "Sus" & Domestication == "domestic"),
+                  Wild_boar = (Genus == "Sus" & Domestication == "wild"))
 
-ord <- prcomp(GIFTs_elements)
+# Species traits to use as constraints
+species_traits <- c("Domestic_sheep", "Feral_sheep", "Wild_argali",
+                    "Domestic_horse", "Wild_zebra",
+                    "Domestic_pig", "Wild_boar")
 
-# Get some info for plotting
-var_explained <- round(ord$sdev^2 * 100 / sum(ord$sdev^2), 1) # Variance explained
+# Ordinate using all data
+ord <- ord_calc(phy_distillr, constraints = species_traits, method = "RDA")
 
-loadings <- data.frame(Code_element = rownames(ord$rotation[,c(1,2)]), ord$rotation[,c("PC1", "PC2")]) %>%
-  left_join(unique(select(GIFT_db, c("Code_element", "Element", "Function", "Domain")))) %>%
-  mutate(Variables = paste(Element, Domain, sep = " ")) %>%
-  # Keep the longest arrows
-  arrange(desc(sqrt(PC1^2 + PC2^2))) %>%
-  select(PC1, PC2, Variables, Function)
+# Select variables and check for collinearity
+ord_step <- step(ord@ord, scope = formula(ord@ord), test = "perm")
+vif.cca(ord_step)
 
-metadata <- data.frame(phy_gene_f@sam_data)[rownames(ord$x),]
+# Scree plot
+p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
+            xlim(c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"))
+
+ggsave(file.path(subdir, "screeplot_gifts.png"), p, width=3, height=3)
+
+# Plot ordination
 
 dom_shape_palette <- c("domestic" = 1, "wild" = 16, "feral" = 6, "human" = 8)
 
-# Plot
-pca <- ggplot(aes(x = PC1, y = PC2, colour = metadata$Species), data = data.frame(ord$x)) +
-  geom_point(aes(shape = metadata$Domestication)) +
-  scale_colour_manual(values = species_palette, name = "") +
-  scale_shape_manual(values = dom_shape_palette, name = "") +
-  xlab(paste("PC1 -", var_explained[1], "%")) +
-  ylab(paste("PC2 -", var_explained[2], "%")) +
-  #geom_segment(data = loadings[1:10,], aes(x = 0, y = 0, xend = (PC1*10),
-  #                                     yend = (PC2*10)), arrow = arrow(length = unit(0.5, "picas")),
-  #             color = "black") +
-  #geom_label(data = loadings[1:10,], aes(x = (PC1*10), y = (PC2*10), label = Variables),
-  #          size = 2, hjust = 0.5, vjust = -0.5, color = "black", alpha = 0.7) +
-  theme(legend.position = "bottom") +
-  guides(colour = guide_legend(nrow =3), shape = guide_legend(nrow = 3))
+p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0.5) +
+  custom_theme() +
+  scale_shape_manual(values=dom_shape_palette, name = "Domestication") +
+  scale_color_manual(values=species_palette, name = "Species") +
+  geom_phylopic(data = centroids(ord@ord, phy_distillr), aes(colour = Species), uuid = centroids(ord@ord, phy_distillr)$uid, width = 0.1, fill = "transparent") +
+  theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
+  guides(shape = guide_legend(ncol = 2), colour = guide_legend(ncol = 2))
+  
+p <- ggMarginal(p, type="violin", groupColour = TRUE, groupFill = TRUE, size=5)
 
-pca <- ggMarginal(pca, type = "violin", groupFill = TRUE, groupColour = TRUE)
+ggsave(p, filename = file.path(subdir, "gifts_ordination.png"), width=6, height=6)
 
-ggsave(pca, filename = file.path(subdir, "PCA_GIFTs_community.png"), width = 8, height = 8)
+# Plot arrows
+# Get loading arrows coordinaties
+arrows <- arrow_coord(ord@ord, axes = c(1, 2))
 
-# Extract info on functions explaining the most variance (top 20)
-var_gifts <- loadings %>% head(20) %>%
-    # Get genes implicated in these orders
-    left_join(mutate(GIFT_db, Variables = paste(Element, Domain))) %>%
-    select(Element, Domain, Function, Definition)
+# Get info for for plotting
+arrows <- GIFT_db %>% select(Code_element, Element, Function, Domain) %>%
+  mutate(Element = paste(Element, Domain)) %>% unique %>%
+  right_join(rownames_to_column(data.frame(arrows), "Code_element"), by = "Code_element") %>%
+  column_to_rownames("Code_element") %>%
+  arrange(desc(distance))
 
-write.csv(var_gifts, file.path(subdir, "GIFTs_explaining_variance.csv"), row.names = FALSE)
+# label 8 strongest associations plus the 5 largest effects of RDA1 and RDA2
+arrows$to_label <- (rownames(arrows) %in% head(rownames(arrows), 8) | 
+                    rownames(arrows) %in% head(rownames(arrange(arrows, desc(abs(RDA1)))), 5) |
+                    rownames(arrows) %in% head(rownames(arrange(arrows, desc(abs(RDA2)))), 5))
+
+# Save
+write.csv(rownames_to_column(arrows, "Code_element"), file.path(subdir, "gift_ordination_arrows.txt"), quote = FALSE, row.names = FALSE)
+
+# Group uncommon categories
+common_categories <- table(arrows$Function) %>% sort(decreasing = TRUE) %>% head(6) %>% names
+
+arrows <- arrows %>%
+    mutate(category_grouped = factor(case_when(Function %in% common_categories ~ Function,
+                                            TRUE ~ "Other"), levels = c(common_categories, "Other")))
+
+# Set colours for categories using colour brewer
+arrow_colours <- brewer.pal(n = length(unique(arrows$category_grouped))-1, name = "Dark2")
+names(arrow_colours) <- unique(arrows$category_grouped)[-length(unique(arrows$category_grouped))] # Remove "Other" from names
+arrow_colours["Other"] <- "grey50" # Set "Other" to grey
+
+p <- ggplot(data = arrows) +
+  geom_segment(aes(x = 0, y = 0, xend = RDA1, yend = RDA2, colour = category_grouped), linewidth = 0.5, alpha = 0.5) +
+  scale_color_manual(values = arrow_colours, name = "Module") +
+  geom_label(aes(label = Element, x = RDA1, y = RDA2, colour = category_grouped, hjust = ifelse(RDA1 < 0, 0.2, 0.8)), size = 2, data = filter(arrows, to_label)) +
+  xlab("RDA1") + ylab("RDA2") +
+  theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
+  guides(colour = guide_legend(nrow = 2))
+
+ggsave(p, filename = file.path(subdir, "gifts_ordination_arrows.png"), width=6, height=6)
+
+###################
+#### PERMANOVA ####
+###################
+
+# Explanatory variables
+otus <- as.data.frame(subset_samples(phy_distillr, Species != "Homo sapiens")@otu_table)
+
+sample_data <- as.data.frame(subset_samples(phy_distillr, Species != "Homo sapiens")@sam_data)
+
+genus <- sample_data$Genus
+dom <- sample_data$Domestication
+reads <- sample_data$contig_reads_count
+
+set.seed(123)
+
+# Run PERMANOVA with all factors and only species
+perm <- adonis2(otus ~ genus * dom + reads,
+        permutations = 1000, by = "term", method = "euclidean")
+
+write.csv(as.data.frame(perm), file = file.path(subdir, "permanova_gifts.csv"), row.names = TRUE, quote = TRUE)
 
 ##########################
 #### DISTILL BY TAXON ####
@@ -250,8 +316,6 @@ ggsave(p, filename = file.path(subdir, "GIFTs_functions_by_taxon.png"), width = 
 write.csv(GIFTs_functions_long, file.path(subdir, "GIFTs_functions_by_taxon.csv"), row.names = FALSE)
 
 #### PCA ####
-amr <- GIFTs_elements_long %>% filter(Function == "Antibiotic degradation") %>% pull(Code_element) %>% unique
-GIFTs_elements <- GIFTs_elements[, !colnames(GIFTs_elements) %in% amr]
 
 ord <- prcomp(GIFTs_elements)
 
