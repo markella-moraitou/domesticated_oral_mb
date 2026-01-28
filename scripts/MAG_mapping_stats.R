@@ -83,6 +83,7 @@ map_stats_hq <- map_stats_meta %>%
 p1 <- ggplot(data = map_stats_hq, aes(x = mapped_reads, y = coverage, colour = identity)) +
         geom_point(alpha = 0.5, size = 0.1) +
         geom_point(data = filter(map_stats_hq, assembly_sample), alpha = 1, size = 0.2, colour = "red") +
+        geom_hline(yintercept = 80, linewidth = 0.5, linetype = "dashed", color = "black") +
         scale_x_log10() +
         scale_colour_viridis_b(name = "Identity", option = "plasma") +
         theme(legend.position = "top", legend.text = element_text(size = 6, angle = 45, hjust = 1))
@@ -91,17 +92,20 @@ p2 <- ggplot(data = map_stats_hq, aes(x = identity, y = coverage, colour = mappe
         geom_point(alpha = 0.5, size = 0.1) +
         geom_point(data = filter(map_stats_hq, assembly_sample), alpha = 1, size = 0.2, colour = "red") +
         scale_x_log10() +
-        geom_vline(xintercept = 98, linewidth = 0.5, linetype = "dashed", color = "black") +
+        geom_vline(xintercept = 99, linewidth = 0.5, linetype = "dashed", color = "black") +
+        geom_hline(yintercept = 80, linewidth = 0.5, linetype = "dashed", color = "black") +
         scale_colour_viridis_b(name = "Mapped reads", option = "mako", trans = "log10") +
         theme(legend.position = "top", legend.text = element_text(size = 6, angle = 45, hjust = 1))
 
 p3 <- ggplot(data = map_stats_hq, aes(x = coverage, fill = assembly_sample)) +
         geom_histogram(alpha=0.5) +
+        geom_vline(xintercept = 80, linewidth = 0.5, linetype = "dashed", color = "black") +
         scale_fill_manual(name = "Assembly sample", values = c("TRUE" = "red", "FALSE" = "grey")) +
         theme(legend.position = "top")
 
 p4 <- ggplot(data = map_stats_hq, aes(x = identity, fill = assembly_sample)) +
         geom_histogram(alpha=0.5) +
+        geom_vline(xintercept = 99, linewidth = 0.5, linetype = "dashed", color = "black") +
         scale_fill_manual(name = "Assembly sample", values = c("TRUE" = "red", "FALSE" = "grey")) +
         theme(legend.position = "top")
 
@@ -179,8 +183,8 @@ ggsave(file.path(subdir, "hq_mag_cov_and_id_max.png"), plot = p, width = 6, heig
 
 #### Define presence-absence of MAGs per host species ####
 # Set identity and coverage thresholds based on mappings stats in assembly samples
-min_id <- 98
-min_cov <- 75
+min_id <- 99
+min_cov <- 80
 
 mag_pres_per_sp <- 
             # Keep only mappings passing the thresholds

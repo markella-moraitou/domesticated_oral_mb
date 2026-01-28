@@ -204,7 +204,8 @@ get_distances <- function(mag, species, distance_table) {
         # Are we comparing with humans or wild counterparts?
         mutate(comparing_with = domestication_2) %>%
         # Was the MAG idenitified via assembly or mapping?
-        mutate(presence = method_1)
+        mutate(presence = case_when(method_1 == "mapped" | method_2 == "mapped" ~ "mapped",
+                                    TRUE ~ "assembled"))
     
     # Get the smallest distance for each comparison
     dist_min <- dist_filt %>%
@@ -213,7 +214,9 @@ get_distances <- function(mag, species, distance_table) {
         select(comparing_with, Distance, presence) %>%
         # Add relevant data
         mutate(domesticate_MAG = mag,
-               domesticate_host = species) %>% unique()
+               domesticate_host = species) %>% unique() %>%
+        ungroup() %>% mutate(presence = case_when(any(presence == "mapped") ~ "mapped",
+                                        TRUE ~ "assembled"))
     return(dist_min)    
 }
 
@@ -236,22 +239,30 @@ for(i in 1:nrow(dom_mags)) {
     }
 }
 
+dw_dh_distances <- unique(dw_dh_distances)
+
 write.csv(dw_dh_distances, file = file.path(subdir, "domestic_mag_dw_dh_distances.csv"), row.names = FALSE)
 
 # Make wider
 dw_dh_wide <- dw_dh_distances %>%
-    pivot_wider(names_from = comparing_with, values_from = Distance)
+    pivot_wider(names_from = comparing_with, values_from = Distance, id_cols = c(domesticate_MAG, domesticate_host, presence))
 
 # Plot
 p <- ggplot(data = dw_dh_wide, aes(x = wild, y = human, colour = domesticate_host, shape = presence)) +
      geom_jitter(alpha = 0.5, size = 2, height = 0.01, width = 0.01) +
      scale_colour_manual(values = species_palette, name = "Domesticate host") +
-     scale_shape_manual(values = c("mapped" = 4, "assembled" = 16), name = "MAG identification method",
-                        labels = c("assembled", "mapped")) +
+     scale_shape_manual(values = c("mapped" = 4, "assembled" = 16), name = "MAG presence via",
+                        labels = c("assembly", "mapping")) +
      facet_grid(domesticate_host ~ .) +
      labs(x = "Distance to nearest wild counterpart MAG",
           y = "Distance to nearest human MAG") +
      geom_abline(slope = 1, intercept = 0, linetype = "dotted", color = "black") +
-     theme(legend.direction = "vertical", legend.position = "top")
+     theme(legend.direction = "vertical", legend.position = "right")
 
-ggsave(p, filename = file.path(subdir, "dw_dh_distances.png"), width = 5, height = 8)
+# Label mags that are closer to human MAGs
+p <- p + geom_text(data = subset(dw_dh_wide, human < wild),
+                   aes(label = domesticate_MAG),
+                   vjust = 1, hjust = 0.5, size = 1.7, color = "black") +
+    xlim(c(0,1.8))
+
+ggsave(p, filename = file.path(subdir, "dw_dh_distances.png"), width = 6, height = 5)

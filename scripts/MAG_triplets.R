@@ -9,6 +9,7 @@ library(phangorn)
 library(dplyr)
 library(ggplot2)
 library(tidyr)
+library(tibble)
 library(stringr)
 library(cowplot)
 library(ggtree)
@@ -45,8 +46,10 @@ presabs <- read.csv(file.path(magdir, "mag_mapping_stats", "hq_mag_presence_per_
 #### SEARCH TREE SPLITS ####
 ############################
 
+# For this analysis we consider all sheep domestic
 species_dom <- bac_meta %>% select(host_species, Domestication) %>%
-                filter(!is.na(host_species)) %>% unique
+                filter(!is.na(host_species) & Domestication != "feral") %>% unique
+
 # Combine MAG taxonomy with presence/absence data
 data <- rbind(bac_meta, ar_meta) %>% select(label, bin, domain, phylum, order, family, genus) %>%
     right_join(presabs, by = c("label" = "label", "bin" = "bin")) %>%
@@ -215,11 +218,15 @@ write.csv(permuted_res, file = file.path(subdir, "mag_tree_splits_permuted.csv")
 
 permuted_summary<- permuted_res %>% group_by(node_type) %>%
         summarise(median_count = median(count),
+                  min_count = min(count),
                   q1_count = quantile(count, 0.25),
                   q3_count = quantile(count, 0.75),
+                  max_count = max(count),
                   median_prop = median(prop),
+                  min_prop = min(prop),
                   q1_prop = quantile(prop, 0.25),
-                  q3_prop = quantile(prop, 0.75))
+                  q3_prop = quantile(prop, 0.75),
+                  max_prop = max(prop))
 
 # Combine observed and permuted results
 summary_combine <-
@@ -233,50 +240,70 @@ write.csv(summary_combine, file = file.path(subdir, "mag_tree_splits_summary.csv
 
 # Plot observed vs permuted
 p1 <- ggplot(aes(x = node_type, y = count), data = permuted_res) +
-        geom_boxplot(fill="lightgrey") +
-        geom_point(data = summary_combine, aes(x = node_type, y = count), color="red", size=3) +
+        geom_boxplot(fill="white") +
+        geom_point(data = summary_combine, aes(x = node_type, y = count), color="orange", size=3) +
         ylab("Number of triplets") +
-        theme(axis.title.x = element_blank(), axis.text.x = element_blank())
+        theme(axis.title.x = element_blank(), axis.text.x = element_text(hjust=1))
 
 p2 <- ggplot(aes(x = node_type, y = prop * 100), data = permuted_res) +
-        geom_boxplot(fill="lightgrey") +
-        geom_point(data = summary_combine, aes(x = node_type, y = proportion * 100), color="red", size=3) +
+        geom_boxplot(fill="white") +
+        geom_point(data = summary_combine, aes(x = node_type, y = proportion * 100), color="orange", size=3) +
         ylab("Percentage of triplets") +
         theme(axis.title.x = element_blank(), axis.text.x = element_text(hjust=1))
 
-p <- plot_grid(p1, p2, ncol=1, align="v", rel_heights = c(1,2))
+p <- plot_grid(p1, p2, ncol=2, align="h")
 
-ggsave(p, file = file.path(subdir, "mag_tree_split_comparison.png"), width=4, height=6)
+ggsave(p, file = file.path(subdir, "mag_tree_split_comparison.png"), width=6, height=4)
 
 #######################
 #### PLOT SUBTREES ####
 #######################
 
 # Function to plot subtrees for each family alongside a presence absence heatmap
-plot_substree <- function(big_tree, mag_data, mag_presence) {
-    # Subset tree to only include MAGs from this family
-    sub_tree <- drop.tip(big_tree, setdiff(big_tree$tip.label, mag_presence$label))
+plot_substree <- function(big_tree, node, mag_data, mag_presence) {
+    # Get only that node
+    sub_tree <- extract.clade(big_tree, node = node)
     sub_data <- mag_data %>% filter(label %in% sub_tree$tip.label)
+    
+    # Scale branch lengths for easier plotting
+    sub_tree$edge.length <- sub_tree$edge.length / max(sub_tree$edge.length) * 0.1
     
     p_tree <- ggtree(sub_tree) %<+%
               select(sub_data, c(label, phylum, host_species)) +
               geom_tippoint(aes(colour = host_species), size=1) +
               geom_tiplab(size=2, aes(colour = host_species)) +
-              scale_colour_manual(values = species_palette)
+              scale_colour_manual(values = species_palette, name = "Assembled in")
     
     # Add presence/absence heatmap
-    pres_data <- mag_presence %>% mutate(presence=1) %>%
+    pres_data <- mag_presence %>% mutate(presence=TRUE) %>%
+                    filter(label %in% sub_tree$tip.label) %>%
                     select(label, host_species, presence) %>%
                     pivot_wider(names_from = host_species, values_from = presence, values_fill = 0) %>%
-                    pivot_longer(-label, names_to = "species", values_to = "presence")
-    p <- p_tree + geom_fruit(data = pres_data,
-                           geom=geom_tile,
-                           mapping=aes(y=label, x = species, fill=presence),
-                           axis.params=list(axis = "x", text.size = 2, angle = 0),
-                           offset = 0.5,
-                           width = 0.3)
+                    column_to_rownames("label") %>% as.matrix
+    
+    p <- gheatmap(p_tree, pres_data, offset = 0.08, width = 1.5,
+        colnames=TRUE, font.size = 2, legend_title="Presence") +
+        scale_fill_manual(values = c("grey96", "orange"), labels = c("absent", "present"), name = "") +
+        theme(legend.position = "none", plot.title = element_text(size = 8)) +
+        ggtitle(paste0("Subtree at node ", node))
     return(p) 
 }
 
-p <- plot_substree(bac_tree, filter(data, assembly_species), mags_list[[1]])
-ggsave(p, file = file.path(subdir, "test.png"), width=6, height=4)
+# Plot all subtrees with interesting topologies
+# For bacteria
+splits_df_bac <- splits_df_filt %>% filter(node_type != "other" & domain == "Bacteria")
+
+for (i in 1:nrow(splits_df_bac)) {
+    node <- splits_df_bac$node[i]
+    p <- plot_substree(bac_tree, node, data, presabs)
+    ggsave(p, file = file.path(subdir, paste0("subtree_", node, ".png")), width=5, height=1)
+}
+
+# For archaea
+splits_df_ar <- splits_df_filt %>% filter(node_type != "other" & domain == "Archaea")
+for (i in 1:nrow(splits_df_ar)) {
+    node <- splits_df_ar$node[i]
+    p <- plot_substree(ar_tree, node, data, presabs)
+    ggsave(p, file = file.path(subdir, paste0("subtree_", node, ".png")), width=5, height=1)
+}
+
