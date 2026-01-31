@@ -15,6 +15,8 @@ library(phyloseq)
 library(ggplot2)
 library(ggExtra)
 library(microViz)
+library(ggpubr)
+library(rstatix)
 library(rphylopic)
 library(RColorBrewer)
 library(distillR)
@@ -178,8 +180,7 @@ arrows <- GIFT_db %>% select(Code_element, Element, Function, Domain) %>%
   arrange(desc(distance))
 
 # label 8 strongest associations plus the 5 largest effects of RDA1 and RDA2
-arrows$to_label <- (rownames(arrows) %in% head(rownames(arrows), 8) | 
-                    rownames(arrows) %in% head(rownames(arrange(arrows, desc(abs(RDA1)))), 5) |
+arrows$to_label <- (rownames(arrows) %in% head(rownames(arrange(arrows, desc(abs(RDA1)))), 5) |
                     rownames(arrows) %in% head(rownames(arrange(arrows, desc(abs(RDA2)))), 5))
 
 # Save
@@ -199,13 +200,66 @@ arrow_colours["Other"] <- "grey50" # Set "Other" to grey
 
 p <- ggplot(data = arrows) +
   geom_segment(aes(x = 0, y = 0, xend = RDA1, yend = RDA2, colour = category_grouped), linewidth = 0.5, alpha = 0.5) +
-  scale_color_manual(values = arrow_colours, name = "Module") +
-  geom_label(aes(label = Element, x = RDA1, y = RDA2, colour = category_grouped, hjust = ifelse(RDA1 < 0, 0.2, 0.8)), size = 2, data = filter(arrows, to_label)) +
+  scale_color_manual(values = arrow_colours, name = "Function") +
+  geom_label(aes(label = Element, x = RDA1, y = RDA2, colour = category_grouped, hjust = ifelse(RDA1 < 0, 0.2, 0.8)),
+                 size = 2.5, data = filter(arrows, to_label)) +
   xlab("RDA1") + ylab("RDA2") +
   theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
-  guides(colour = guide_legend(nrow = 2))
+  guides(colour = guide_legend(ncol = 2))
 
 ggsave(p, filename = file.path(subdir, "gifts_ordination_arrows.png"), width=6, height=6)
+
+############################
+#### DISTANCES TO HUMAN ####
+############################
+
+# Calculate human centroid
+
+human_centroid <- colMeans(otu_table(subset_samples(phy_distillr, Species == "Homo sapiens")))
+
+# Calculate Aitchison distances of each sample to the human centroid
+distances = data.frame(sample = character(), distance = numeric())
+
+nonhuman_samples <- subset_samples(phy_distillr, Species != "Homo sapiens") %>% sample_names
+
+for (sample in nonhuman_samples) {
+  values <- otu_table(phy_distillr)[sample,]
+  df <- cbind(values, human_centroid) %>% t
+  dist <- vegdist(df, method = "euclidean")
+  distances <- rbind(distances, data.frame(sample = sample, distance = as.numeric(dist)))
+}
+
+# Add metadata
+sample_meta <- data.frame(phy_distillr@sam_data) %>%
+      select(Species, Genus, Common.name, Domestication) %>% rownames_to_column("sample")
+
+distances <- distances %>% left_join(sample_meta, by = "sample")
+
+write.csv(distances, file = file.path(subdir, "distances_to_human_distillr.csv"), quote = FALSE, row.names = FALSE)
+
+# Plot
+p <- ggviolin(data = distances, x = "Domestication", y = "distance", fill = "Species", facet.by = "Genus") +
+  scale_fill_manual(values = species_palette) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.5)) +
+  ylab("Euclidean distances")
+
+# Run Kruskal Wallis tests
+stat.test <- distances %>%
+  group_by(Genus) %>%
+  wilcox_test(distance ~ Domestication) %>%
+  adjust_pvalue(method = "holm") %>%
+  add_significance()
+
+write.csv(stat.test, file = file.path(subdir, "distances_to_human_distillr_test.csv"), quote = FALSE, row.names = FALSE)
+
+stat.test <- stat.test %>% add_xy_position(x = "Domestication")
+
+p <- p +
+  stat_pvalue_manual(
+    stat.test, bracket.nudge.y = -2, hide.ns = TRUE,
+    label = "{p.adj.signif}")
+
+ggsave(file.path(subdir, "distances_to_human_distillr.png"), p, width=5, height=4)
 
 ###################
 #### PERMANOVA ####
