@@ -20,7 +20,7 @@ library(colorspace)
 
 # Directory and file paths paths
 indir <- normalizePath(file.path("..", "input")) # Directory with phyloseq output and sample metadata
-datadir <- normalizePath(file.path("..", "data"))
+datadir <- normalizePath(file.path("..", "output", "function", "data"))
 pathdir <- normalizePath(file.path("..", "output", "function", "pathway_completeness")) # Directory with pathway analysis output
 subdir <- normalizePath(file.path("..", "output", "function", "path_diff_abundance")) # subdirectory for the output of this script
 
@@ -195,9 +195,9 @@ ggsave(p, filename = file.path(subdir, "ancom_res_heatmap.png"), width = 5, heig
 
 # Also plot lfc's as scatterplots to show if they correlate
 data_palette <- darken(species_palette[c("Equus quagga", "Ovis ammon", "Sus scrofa", "Homo sapiens")])
-names(data_palette) <- c("Horse\nvs Zebra", "Sheep\nvs Argali", "Pig\nvs Boar",  "Human\nvs Wild")
+names(data_palette) <- c("Horse\nvs Zebra", "Sheep\nvs Argali", "Pig\nvs Boar",  "Domestic\nvs Wild (All)")
 
-p <- filter(res_filt, c(dataset != "Domestic\nvs Wild (All)")) %>%
+p <- filter(res_filt, c(dataset != "Human\nvs Wild")) %>%
     mutate(signif = case_when(signif != "" ~ "*")) %>%
     ggplot(aes(y = taxon, x = lfc)) +
     geom_vline(xintercept = 0, linewidth = 0.3, colour = "grey60") +
@@ -255,3 +255,38 @@ p <- ggplot(ancom_abund, aes(x = Group, y = Abundance, fill = Species, colour = 
     guides(fill=guide_legend(nrow=2,byrow=TRUE))
 
 ggsave(p, filename = file.path(subdir, "ancom_abundances.png"), width = 10, height = 8)
+
+#################################
+#### CHECK GENES & TAXONOMY  ####
+#################################
+
+# For differentially abundant pathways, check which KOs are involved
+# And which taxa they're encoded by
+
+# Find differentially abundant pathways between domestic and wild animals
+da_paths <- res_filt %>% filter(dataset != "Human\nvs Wild") %>%
+                  filter( q < 0.05 & passed_ss) %>% pull(taxon) %>% unique
+
+da_kos <- data.frame(phy_pathway@tax_table) %>% filter(path_name %in% da_paths) %>% rownames
+
+# Get genes for these KOs
+da_genes <- path_to_ko %>% filter(pathway %in% da_kos) %>%
+            left_join(rownames_to_column(data.frame(phy_pathway@tax_table), "pathway"))
+
+# Get gene info and abundances
+gene_abundances <- phy_gene_f %>%
+  subset_taxa(taxa_names(phy_gene_f) %in% str_remove(da_genes$kos, "ko:")) %>%
+  psmelt %>% 
+  select(OTU, Sample.ID, Abundance, Species, Domestication, gene_name, gene_description) %>%
+  mutate(kos = paste0("ko:", OTU)) %>%
+  left_join(da_genes, by = "kos", relationship = "many-to-many")
+
+# Plot abundances of genes per pathway and species
+p <- gene_abundances %>% group_by(Species, Domestication, OTU, gene_name, gene_description, pathway, path_name) %>%
+      summarise(median_abundance = median(Abundance) + 1) %>%
+      ggplot(aes(x = OTU, y = median_abundance)) +
+      geom_bar(stat = "identity") +
+      facet_grid(cols = vars(path_name), rows = vars(Species), scales = "free", space = "free_x") +
+      scale_y_continuous(trans = 'log10')
+
+ggsave(p, filename = file.path(subdir, "ancom_da_pathway_genes.png"), width = 10, height = 20)

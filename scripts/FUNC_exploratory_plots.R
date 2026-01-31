@@ -249,38 +249,37 @@ arrows$name <- as.character(phy_pathway_clr@tax_table[match(rownames(arrows), ro
 arrows$category <- as.character(phy_pathway_clr@tax_table[match(rownames(arrows), rownames(phy_pathway_clr@tax_table)), "path_class"])
 arrows$category <- str_remove(arrows$category, ".*; ")
 
-arrows$to_plot <- (rownames(arrows) %in% head(rownames(arrows), nrow(arrows)))
+# Choose the 5 strongest associations to label
+arrows$to_label <- (rownames(arrows) %in% head(rownames(arrows), 5))
 
 # Save
 write.csv(rownames_to_column(arrows, "gene"), file.path(subdir, "gene_ordination_arrows.txt"), quote = FALSE, row.names = FALSE)
 
-# Keep only strongest associations
-arrows_filt <- arrows %>% filter(to_plot) %>%
-              select(contains(c("1", "2")), name, category)
-
 # Group uncommon categories
-common_categories <- table(arrows_filt$category) %>% sort(decreasing = TRUE) %>% head(8) %>% names
+common_categories <- table(arrows$category) %>% sort(decreasing = TRUE) %>% head(8) %>% names
 
-arrows_filt <- arrows_filt %>%
+arrows <- arrows %>%
     mutate(category_grouped = factor(case_when(category %in% common_categories ~ category,
                                             TRUE ~ "Other"), levels = c(common_categories, "Other")))
 
 # Set colours for categories using colour brewer
-arrow_colours <- brewer.pal(n = length(unique(arrows_filt$category_grouped))-1, name = "Dark2")
-names(arrow_colours) <- unique(arrows_filt$category_grouped)[-length(unique(arrows_filt$category_grouped))] # Remove "Other" from names
-arrow_colours["Other"] <- "grey90" # Set "Other" to grey
+arrow_colours <- brewer.pal(n = length(unique(arrows$category_grouped))-1, name = "Dark2")
+names(arrow_colours) <- unique(arrows$category_grouped)[-length(unique(arrows_filt$category_grouped))] # Remove "Other" from names
+arrow_colours["Other"] <- "grey50" # Set "Other" to grey
 
-p <- ggplot(data = arrows_filt) +
+p <- ggplot(data = arrows) +
   geom_segment(aes(x = 0, y = 0, xend = RDA1, yend = RDA2, colour = category_grouped), linewidth = 0.5, alpha = 0.5) +
-  #geom_text(aes(x = RDA1, y = RDA2, label = name, hjust = ifelse(RDA1 < 0, 1, 0)), size = 1.5, vjust = 1) +
   scale_color_manual(values = arrow_colours, name = "Pathway class") +
-  xlim(c(min(arrows_filt$RDA1)*2, max(arrows_filt$RDA1)*2)) +
+  # label
+  geom_label(aes(label = name, x = RDA1, y = RDA2, colour = category_grouped, hjust = 0.2),
+              size = 3, data = filter(arrows, to_label)) +
+  xlim(c(min(arrows$RDA1)*2, max(arrows$RDA1)*2)) +
   xlab("RDA1") + ylab("RDA2") +
   theme(legend.position = "bottom", legend.direction = "vertical",
         legend.text = element_text(size = 7), legend.title = element_text(size = 10)) +
   guides(colour = guide_legend(ncol = 2))
 
-ggsave(p, filename = file.path(subdir, "pathway_ordination_arrows.png"), width=6, height=5)
+ggsave(p, filename = file.path(subdir, "pathway_ordination_arrows.png"), width=6, height=6)
 
 ###################
 #### PERMANOVA ####
