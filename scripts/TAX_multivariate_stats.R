@@ -67,7 +67,7 @@ phy_sp_f_pa <- microbiome::transform(phy_sp_f, "pa")
 #####  BETA DISPER  #####
 #########################
 
-# Calculate beta disper for species, order and diet, and run tukey's test
+#### For host group ####
 
 tukey_results <- data.frame()
 
@@ -96,6 +96,26 @@ p <- ggplot(data = disp_df, aes(x = Group, y = Distance, fill = Species)) +
     theme(legend.position = "none", axis.text.x = element_text(hjust = 1))
 
 ggsave(file.path(subdir, "betadisper.png"), p, width = 5, height = 5)
+
+#### For domesticated versus wild (exclude feral) ####
+
+phy_dw <- subset_samples(phy_sp_f_clr, Domestication %in% c("wild", "domestic"))
+
+disp <- betadisper(vegdist(t(otu_table(phy_dw)), method = "euclidean"), group = phy_dw@sam_data$Domestication)
+
+disp_anova <- anova(disp)
+
+disp_df <- data.frame(Sample = sample_names(phy_dw),
+                      Domestication = phy_dw@sam_data$Domestication,
+                      Distance = disp$distances)
+
+p <- ggplot(data = disp_df, aes(x = Domestication, y = Distance)) +
+    geom_boxplot() +
+    geom_jitter(alpha = 0.5, width = 0.2) +
+    #scale_fill_manual(values = species_palette, name = "Species") +
+    theme(legend.position = "none", axis.text.x = element_text(hjust = 1))
+
+ggsave(file.path(subdir, "betadisper_dom.png"), p, width = 5, height = 5)
 
 #########################
 #####  COMPOSITION  #####
