@@ -80,6 +80,11 @@ map_stats_hq <- map_stats_meta %>%
     filter(identity >= 90) 
 
 #### Plot coverage - identity - number of reads ####
+# Set identity and coverage thresholds based on mappings stats in assembly samples
+min_id <- 98
+min_cov <- 75
+min_reads <- 10^4
+
 p1 <- ggplot(data = map_stats_hq, aes(x = mapped_reads, y = coverage, colour = identity)) +
         geom_point(alpha = 0.5, size = 0.1) +
         geom_point(data = filter(map_stats_hq, assembly_sample), alpha = 1, size = 0.2, colour = "red") +
@@ -182,9 +187,6 @@ p <- ggplot(data = map_stats_per_host_filt, aes(x = host_species, y = label)) +
 ggsave(file.path(subdir, "hq_mag_cov_and_id_max.png"), plot = p, width = 6, height = 12)
 
 #### Define presence-absence of MAGs per host species ####
-# Set identity and coverage thresholds based on mappings stats in assembly samples
-min_id <- 99
-min_cov <- 80
 
 mag_pres_per_sp <- 
             # Keep only mappings passing the thresholds
