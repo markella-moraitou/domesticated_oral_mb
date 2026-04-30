@@ -282,6 +282,36 @@ perm <- adonis2(otus ~ genus * dom + reads,
 
 write.csv(as.data.frame(perm), file = file.path(subdir, "permanova_gifts.csv"), row.names = TRUE, quote = TRUE)
 
+######################
+#### DIET RELATED ####
+######################
+
+
+# Plot some diet related GIFTs
+GIFTs_diet <- GIFTs_elements_long %>%
+              filter(Function %in% c("Xenobiotic degradation", "Polysaccharide degradation", "Sugar degradation")) %>%
+              # Remove elements whose completeness is always zero or always 1 
+              group_by(Element) %>% filter(max(Completeness) != 0 & min(Completeness) != 1) %>%
+              mutate(Element = str_remove(Element, Domain)) %>%
+              # Remove humans
+              filter(Genus != "Homo")
+
+# Adapt palette
+group_palette <- species_palette
+
+name_match <- phy_gene_f@sam_data %>% data.frame %>%
+  select(Species, Common.name, Group) %>% unique()
+
+names(group_palette) <- unique(name_match$Group[match(names(group_palette), name_match$Species)])
+group_palette['feral sheep'] <- darken(group_palette['domestic sheep'], 0.5)
+
+p <- ggplot(data = GIFTs_diet, aes(y = Completeness, x = Genus, fill = Group)) +
+      geom_boxplot() +
+      scale_fill_manual(values = group_palette) +
+      facet_wrap(~Element, scales = "free_y", ncol = 3)
+
+ggsave(p, filename = file.path(subdir, "GIFTs_diet_related.png"), width = 10, height = 15)
+
 ##########################
 #### DISTILL BY TAXON ####
 ##########################
