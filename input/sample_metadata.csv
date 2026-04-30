@@ -1,182 +1,180 @@
-Sample.ID,Species,Common name,Study,Domestication,Location,Country,Period
-DM_026,Equus caballus,Domestic horse,This Study,domestic,,,Unknown
-DM_027,Equus caballus,Domestic horse,This Study,domestic,,,Unknown
-DM_028,Equus caballus,Domestic horse,This Study,domestic,,,Unknown
-DM_029,Equus caballus,Domestic horse,This Study,domestic,,,Unknown
-MS_121,Equus caballus,Domestic horse,This Study,domestic,,,Unknown
-MS_122,Equus caballus,Domestic horse,This Study,domestic,,,Unknown
-RM_112,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
-RM_113,Equus quagga,Plains zebra,This Study,wild,Kiato,Congo (DR),20th century
-RM_114,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
-RM_116,Equus quagga,Plains zebra,This Study,wild,Katodjo,Rwanda,20th century
-RM_117,Equus quagga,Plains zebra,This Study,wild,Tsavo,Kenya,Unknown
-RM_118,Equus quagga,Plains zebra,This Study,wild,Katodjo,Rwanda,20th century
-RM_120,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
-RM_121,Equus quagga,Plains zebra,This Study,wild,Akagera,Rwanda,Unknown
-RM_122,Equus quagga,Plains zebra,This Study,wild,Luapula,Congo (DR),20th century
-RM_123,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
-RM_124,Equus quagga,Plains zebra,This Study,wild,Akagera vallei,Rwanda,Unknown
-RM_125,Equus quagga,Plains zebra,This Study,wild,Kibarras plateau,Congo (DR),Unknown
-RM_126,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
-RM_127,Equus quagga,Plains zebra,This Study,wild,Katodjo,Rwanda,20th century
-RM_128,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
-RM_129,Equus quagga,Plains zebra,This Study,wild,Kitangala,Congo (DR),20th century
-RM_130,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
-RM_131,Equus quagga,Plains zebra,This Study,wild,Kapiri,Congo (DR),Unknown
-RM_133,Equus quagga,Plains zebra,This Study,wild,Akagera,Rwanda,Unknown
-RM_135,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
-RM_136,Equus quagga,Plains zebra,This Study,wild,Akagera,Rwanda,Unknown
-RM_137,Equus quagga,Plains zebra,This Study,wild,?,Rwanda,Unknown
-RM_138,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
-RM_140,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century
-BSQ001.A,Homo sapiens,Human,FellowsYates2021,human,Unknown (Basque Pyranees region),Spain,Unknown
-JAE008.A,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century
-JAE010.A,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century
-JAE012.A,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century
-JAE013.A,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century
-JAE015.A,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century
-LIS001.A,Homo sapiens,Human,FellowsYates2021,human,"Lisbon Metropolitan Area, Portugal",Portugal,Unknown
-LIS002.A,Homo sapiens,Human,FellowsYates2021,human,"Lisbon Metropolitan Area, Portugal",Portugal,Unknown
-LIS003.A,Homo sapiens,Human,FellowsYates2021,human,"Lisbon Metropolitan Area, Portugal",Portugal,Unknown
-PYK001.A,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,20th century
-PYK002.A,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,20th century
-PYK003.A,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,20th century
-PYK004.A,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,20th century
-PYK005.A,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,20th century
-HM_043,Ovis ammon,Argali,This Study,wild,Altai,Mongolia,20th century
-MV_284,Ovis ammon,Argali,This Study,wild,"Bel Karasu, Nordhang d. chrebet Saryzhas",Kyrgyzstan,20th century
-MV_285,Ovis ammon,Argali,This Study,wild,"Cherebet Saryzhas, E-Teil des Terskej Alatau",Kyrgyzstan,20th century
-MV_286,Ovis ammon,Argali,This Study,wild,"Bel Karasu, Nordhang d. chrebet Saryzhas",Kyrgyzstan,20th century
-MV_287,Ovis ammon,Argali,This Study,wild,,Mongolia,20th century
-MV_288,Ovis ammon,Argali,This Study,wild,"Csilun, E Terskej Alatau",Kyrgyzstan,20th century
-MV_289,Ovis ammon,Argali,This Study,wild,"Bel Karasu, Nordhang d. chrebet Saryzhas",Kyrgyzstan,20th century
-MV_290,Ovis ammon,Argali,This Study,wild,Mountains west of Beijing,China,20th century
-MV_291,Ovis ammon,Argali,This Study,wild,"Mokatschi(-basi), chrebet Saryzhas",Kyrgyzstan,20th century
-MV_292,Ovis ammon,Argali,This Study,wild,Katschka Tor (Pass),Kyrgyzstan,20th century
-DM_009,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown
-MS_029,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown
-MS_032,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown
-MS_117,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown
-MS_118,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown
-MS_004,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
-MS_005,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
-MS_009,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
-MS_010,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
-MS_051,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
-MS_053,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
-MS_057,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
-MS_058,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
-MS_091,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
-MS_092,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
-MS_095,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
-MS_096,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
-MS_099,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
-MS_101,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
-MS_102,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
-MS_103,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
-MS_104,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
-MS_105,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
-MS_106,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century
-MS_107,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
-MS_108,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
-MS_109,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
-MS_113,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
-MS_114,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century
-DM_002,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
-DM_005,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
-DM_008,Sus domesticus,Domestic pig,This Study,domestic,,Poland or Ukraine?,Unknown
-DM_013,Sus domesticus,Domestic pig,This Study,domestic,,Poland?,Unknown
-DM_014,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
-DM_015,Sus domesticus,Domestic pig,This Study,domestic,,Serbia?,Unknown
-DM_016,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
-DM_017,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
-DM_019,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
-DM_020,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
-DM_021,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
-DM_022,Sus domesticus,Domestic pig,This Study,domestic,,UK?,Unknown
-maybe_DM_017,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown
-DM_003,Sus scrofa,Wild boar,This Study,wild,,,Unknown
-DM_004,Sus scrofa,Wild boar,This Study,wild,,,Unknown
-DM_006,Sus scrofa,Wild boar,This Study,wild,,,Unknown
-DM_007,Sus scrofa,Wild boar,This Study,wild,,,Unknown
-DM_010,Sus scrofa,Wild boar,This Study,wild,,,Unknown
-DM_011,Sus scrofa,Wild boar,This Study,wild,,,20th century
-DM_012,Sus scrofa,Wild boar,This Study,wild,,,Unknown
-MV_099,Sus scrofa,Wild boar,This Study,wild,,Austria,20th century
-MV_100,Sus scrofa,Wild boar,This Study,wild,,Austria,20th century
-MV_102,Sus scrofa,Wild boar,This Study,wild,,Romania,20th century
-MV_103,Sus scrofa,Wild boar,This Study,wild,,Austria,19th century
-MV_201,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century
-MV_202,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century
-MV_203,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century
-MV_204,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century
-MV_206,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century
-MV_207,Sus scrofa,Wild boar,This Study,wild,"Strasse von Hundsheim mach Wolfsthal, PB Bruck a.d. Leitha, GB Hainburgh/Donau",Austria,20th century
-MV_208,Sus scrofa,Wild boar,This Study,wild,Falkenstein,Austria,20th century
-MV_209,Sus scrofa,Wild boar,This Study,wild,Falkenstein,Austria,21st century
-MV_210,Sus scrofa,Wild boar,This Study,wild,"Purkersdorf, Sankt Poelten",Austria,21st century
-MV_211,Sus scrofa,Wild boar,This Study,wild,"Gaenserndorf, Stopfenreuth",Austria,21st century
-MV_212,Sus scrofa,Wild boar,This Study,wild,Lainzer Tiergarten,Austria,20th century
-MV_213,Sus scrofa,Wild boar,This Study,wild,,Austria,20th century
-MV_214,Sus scrofa,Wild boar,This Study,wild,"Verlandsungszone des Neusiedler-sees, S Jois, GB+PB Neusiedl/See",Austria,20th century
-MV_215,Sus scrofa,Wild boar,This Study,wild,"Lainzer Tiergarten, Johannserkogel",Austria,20th century
-MV_216,Sus scrofa,Wild boar,This Study,wild,"Unterwart, Oberwart",Austria,21st century
-DM_C01,Environmental control,Environmental control,This study,NA,NA,NA,NA
-HM_015,Environmental control,Environmental control,This study,NA,NA,NA,NA
-HM_038,Environmental control,Environmental control,This study,NA,NA,NA,NA
-MS_C02,Environmental control,Environmental control,This study,NA,NA,NA,NA
-MV_C02,Environmental control,Environmental control,This study,NA,NA,NA,NA
-MV_C03,Environmental control,Environmental control,This study,NA,NA,NA,NA
-RB_C03,Environmental control,Environmental control,This study,NA,NA,NA,NA
-LB_9,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_6,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_5,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_4,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_3,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_26,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_25,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_24,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_23,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_21,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_2,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_19,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_18,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_17,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_16,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_15,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_14,Library blank,Library blank,This study,NA,NA,NA,NA
-LB_11,Library blank,Library blank,This study,NA,NA,NA,NA
-EB_8_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_8_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_7_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_7_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_6_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_5_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_5_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_4_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_4_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_3_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_3_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_26_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_26_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_25_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_25_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_24_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_24_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_23,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_22,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_21,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_19_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_19_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_18_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_18_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_16,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_15_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_15_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_14_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_13_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_13_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_12_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_12_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_11_2,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
-EB_11_1,Extraction blank,Extraction blank,This study,NA,NA,NA,NA
+Sample.ID,Catalogue.number,Museum,Species,Common name,Study,Domestication,Location,Country,Period,Collection.year
+DM_026,E 70,Adametz collection,Equus caballus,Domestic horse,This Study,domestic,,,Unknown,<1940
+DM_027,E 946,Adametz collection,Equus caballus,Domestic horse,This Study,domestic,,,Unknown,<1940
+DM_028,E 947,Adametz collection,Equus caballus,Domestic horse,This Study,domestic,,,Unknown,<1940
+DM_029,E 91,Adametz collection,Equus caballus,Domestic horse,This Study,domestic,,,Unknown,<1940
+MS_121,Z.1929.40.101,NMS,Equus caballus,Domestic horse,This Study,domestic,,,Unknown,<1929
+MS_122,Z.1929.40.99,NMS,Equus caballus,Domestic horse,This Study,domestic,,,Unknown,<1929
+RM_112,35107,RMCA,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century,1966
+RM_113,11335,RMCA,Equus quagga,Plains zebra,This Study,wild,Kiato,Congo (DR),20th century,1931
+RM_114,35545,RMCA,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century,1966
+RM_116,13838,RMCA,Equus quagga,Plains zebra,This Study,wild,Katodjo,Rwanda,20th century,1936
+RM_117,1153,RMCA,Equus quagga,Plains zebra,This Study,wild,Tsavo,Kenya,Unknown,<1912
+RM_118,13840,RMCA,Equus quagga,Plains zebra,This Study,wild,Katodjo,Rwanda,20th century,1936
+RM_120,32795,RMCA,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century,1964
+RM_121,1978.026-M-0005,RMCA,Equus quagga,Plains zebra,This Study,wild,Akagera,Rwanda,Unknown,<1978
+RM_122,11426,RMCA,Equus quagga,Plains zebra,This Study,wild,Luapula,Congo (DR),20th century,1928
+RM_123,1977.053-M-0018,RMCA,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century,1977
+RM_124,17456,RMCA,Equus quagga,Plains zebra,This Study,wild,Akagera vallei,Rwanda,Unknown,<1946
+RM_125,1759,RMCA,Equus quagga,Plains zebra,This Study,wild,Kibarras plateau,Congo (DR),Unknown,<1913
+RM_126,32796,RMCA,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century,1964
+RM_127,13837,RMCA,Equus quagga,Plains zebra,This Study,wild,Katodjo,Rwanda,20th century,1936
+RM_128,1977.053-M-0019,RMCA,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century,1977
+RM_129,1253,RMCA,Equus quagga,Plains zebra,This Study,wild,Kitangala,Congo (DR),20th century,1912
+RM_130,34824,RMCA,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century,1966
+RM_131,2680,RMCA,Equus quagga,Plains zebra,This Study,wild,Kapiri,Congo (DR),Unknown,<1914
+RM_133,1978.026-M-0006,RMCA,Equus quagga,Plains zebra,This Study,wild,Akagera,Rwanda,Unknown,<1978
+RM_135,1977.053-M-0020,RMCA,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century,1977
+RM_136,1978.026-M-0007,RMCA,Equus quagga,Plains zebra,This Study,wild,Akagera,Rwanda,Unknown,<1978
+RM_137,38126,RMCA,Equus quagga,Plains zebra,This Study,wild,?,Rwanda,Unknown,<1972
+RM_138,35100,RMCA,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century,1966
+RM_140,33519,RMCA,Equus quagga,Plains zebra,This Study,wild,Gabiro,Rwanda,20th century,1964
+BSQ001.A,RV 1983,"Rudolf-Virchow Anthropological Collection of the Berliner Gesellschaft für Anthropologie, Enthnographie und Urgeschichte",Homo sapiens,Human,FellowsYates2021,human,Unknown (Basque Pyranees region),Spain,1st-2nd century ,
+JAE008.A,NA,NA,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century,
+JAE010.A,NA,NA,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century,
+JAE012.A,NA,NA,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century,
+JAE013.A,NA,NA,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century,
+JAE015.A,NA,NA,Homo sapiens,Human,Velsko2019,human,Jaen,Spain,21st century,
+LIS001.A,RV 1663,"Rudolf-Virchow Anthropological Collection of the Berliner Gesellschaft für Anthropologie, Enthnographie und Urgeschichte",Homo sapiens,Human,FellowsYates2021,human,"Lisbon Metropolitan Area, Portugal",Portugal,18th century,
+LIS002.A,RV 1664,"Rudolf-Virchow Anthropological Collection of the Berliner Gesellschaft für Anthropologie, Enthnographie und Urgeschichte",Homo sapiens,Human,FellowsYates2021,human,"Lisbon Metropolitan Area, Portugal",Portugal,18th century,
+LIS003.A,RV 2269,"Rudolf-Virchow Anthropological Collection of the Berliner Gesellschaft für Anthropologie, Enthnographie und Urgeschichte",Homo sapiens,Human,FellowsYates2021,human,"Lisbon Metropolitan Area, Portugal",Portugal,18th century,
+PYK001.A,Burial 14,University of Cape Town Human Skeletal Repository,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,19th century,
+PYK002.A,Burial 12,University of Cape Town Human Skeletal Repository,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,19th century,
+PYK003.A,Isolated remains #8,University of Cape Town Human Skeletal Repository,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,19th century,
+PYK004.A,Isolated remains #13,University of Cape Town Human Skeletal Repository,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,19th century,
+PYK005.A,Unreported Isolated Remain,University of Cape Town Human Skeletal Repository,Homo sapiens,Human,FellowsYates2021,human,Polyoak,South Africa,19th century,
+HM_043,NHMUK ZD 1931.6.1.11,NHM London,Ovis ammon,Argali,This Study,wild,Altai,Mongolia,20th century,1931
+MV_284,NMW 2311,NHM Vienna,Ovis ammon,Argali,This Study,wild,"Bel Karasu, Nordhang d. chrebet Saryzhas",Kyrgyzstan,20th century,1900
+MV_285,NMW 18802,NHM Vienna,Ovis ammon,Argali,This Study,wild,"Cherebet Saryzhas, E-Teil des Terskej Alatau",Kyrgyzstan,20th century,1900
+MV_286,NMW 2309/B 4888,NHM Vienna,Ovis ammon,Argali,This Study,wild,"Bel Karasu, Nordhang d. chrebet Saryzhas",Kyrgyzstan,20th century,1900
+MV_287,NMW 2313,NHM Vienna,Ovis ammon,Argali,This Study,wild,,Mongolia,20th century,1911
+MV_288,NMW 2312/B 4894,NHM Vienna,Ovis ammon,Argali,This Study,wild,"Csilun, E Terskej Alatau",Kyrgyzstan,20th century,1900
+MV_289,NMW 2310/B 5642,NHM Vienna,Ovis ammon,Argali,This Study,wild,"Bel Karasu, Nordhang d. chrebet Saryzhas",Kyrgyzstan,20th century,1900
+MV_290,nicht invent. 1973/HR 85,NHM Vienna,Ovis ammon,Argali,This Study,wild,Mountains west of Beijing,China,20th century,1910
+MV_291,NMW 2296/B 4895,NHM Vienna,Ovis ammon,Argali,This Study,wild,"Mokatschi(-basi), chrebet Saryzhas",Kyrgyzstan,20th century,1900
+MV_292,NMW 2297,NHM Vienna,Ovis ammon,Argali,This Study,wild,Katschka Tor (Pass),Kyrgyzstan,20th century,1900
+DM_009,1064,Adametz collection,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown,<1940
+MS_029,Z.1886.55.2,NMS,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown,<1886
+MS_032,Z.1929.40.134,NMS,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown,<1929
+MS_117,Z.2014.52.304,NMS,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown,1920-1935
+MS_118,Z.2014.52.220,NMS,Ovis aries,Domestic sheep,This Study,domestic,,,Unknown,1920-1935
+MS_004,Z.2003.160.2740,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century,1995
+MS_005,Z.2003.160.1962,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century,1995
+MS_009,Z.2003.160.2678,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century,1986
+MS_010,Z.2003.160.1292,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century,1999
+MS_051,Z.2003.160.329,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century,2002
+MS_053,Z.2003.160.335,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century,2002
+MS_057,Z.2003.160.647,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century,1996
+MS_058,Z.2003.160.1061,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century,1999
+MS_091,Z.2003.160.419,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century,2002
+MS_092,Z.2003.160.421,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century,2002
+MS_095,Z.2003.160.296,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century,2002
+MS_096,Z.2003.160.280,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century,2002
+MS_099,Z.2003.160.274,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century,2002
+MS_101,Z.2003.160.2118,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century,1986
+MS_102,Z.2003.160.2111,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century,1986
+MS_103,Z.2003.160.2090,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century,1986
+MS_104,Z.2003.160.2091,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century,1986
+MS_105,Z.2003.160.2023,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century,1989
+MS_106,Z.2003.160.2015,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,20th century,1989
+MS_107,Z.2003.160.4361,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century,2016
+MS_108,Z.2003.160.4353,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century,2016
+MS_109,Z.2003.160.4345,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century,2016
+MS_113,Z.2019.6.4455,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century,2018
+MS_114,Z.2019.6.4452,NMS,Ovis aries,Domestic sheep,This Study,feral,Hirta,Scotland,21st century,2018
+DM_002,A 284,Adametz collection,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown,<1940
+DM_005,E 757,Adametz collection,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown,<1940
+DM_008,E 754,Adametz collection,Sus domesticus,Domestic pig,This Study,domestic,,Poland or Ukraine?,Unknown,<1940
+DM_013,E 374,Adametz collection,Sus domesticus,Domestic pig,This Study,domestic,,Poland?,Unknown,<1940
+DM_014,E 522,Adametz collection,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown,<1940
+DM_015,E 855,Adametz collection,Sus domesticus,Domestic pig,This Study,domestic,,Serbia?,Unknown,<1940
+DM_016,A 491,Adametz collection,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown,<1940
+DM_017,E 507,Adametz collection,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown,<1940
+DM_019,E 753,Adametz collection,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown,<1940
+DM_020,E 517,Adametz collection,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown,<1940
+DM_021,E 758,Adametz collection,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown,<1940
+DM_022,E 216,Adametz collection,Sus domesticus,Domestic pig,This Study,domestic,,UK?,Unknown,<1940
+maybe_DM_017,E 507,Adametz collection,Sus domesticus,Domestic pig,This Study,domestic,,,Unknown,<1940
+DM_003,E 1042 (large tusks),Adametz collection,Sus scrofa,Wild boar,This Study,wild,,,Unknown,<1940
+DM_004,E 1042 (no tusks),Adametz collection,Sus scrofa,Wild boar,This Study,wild,,,Unknown,<1940
+DM_006,209 (large tusks),Adametz collection,Sus scrofa,Wild boar,This Study,wild,,,Unknown,<1940
+DM_007,E 209 (no tusks),Adametz collection,Sus scrofa,Wild boar,This Study,wild,,,Unknown,<1940
+DM_010,E 209 (male),Adametz collection,Sus scrofa,Wild boar,This Study,wild,,,Unknown,<1940
+DM_011,E 610,Adametz collection,Sus scrofa,Wild boar,This Study,wild,,,20th century,1911
+DM_012,15 E761 73,Adametz collection,Sus scrofa,Wild boar,This Study,wild,,,Unknown,<1940
+MV_099,NMW 28545,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,,Austria,20th century,1965
+MV_100,NMW 8808,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,,Austria,20th century,1962
+MV_102,NMW 18799,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,,Romania,20th century,1905
+MV_103,NMW 507,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,,Austria,19th century,1895
+MV_201,NMW 3811,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century,1933
+MV_202,NMW 3172,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century,1931
+MV_203,NMW 4229,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century,1932
+MV_204,NMW 3202,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century,1931
+MV_206,NMW 3794,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,Mannersdorf am Leithagebirge,Austria,20th century,1930
+MV_207,NMW 22737,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,"Strasse von Hundsheim mach Wolfsthal, PB Bruck a.d. Leitha, GB Hainburgh/Donau",Austria,20th century,1975
+MV_208,NMW 57731,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,Falkenstein,Austria,20th century,1997
+MV_209,NMW 65992,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,Falkenstein,Austria,21st century,2003
+MV_210,NMW 73432,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,"Purkersdorf, Sankt Poelten",Austria,21st century,2017
+MV_211,NMW 68589,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,"Gaenserndorf, Stopfenreuth",Austria,21st century,2009
+MV_212,NMW 1306,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,Lainzer Tiergarten,Austria,20th century,1903
+MV_213,NMW 8807,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,,Austria,20th century,1962
+MV_214,NMW 22757,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,"Verlandsungszone des Neusiedler-sees, S Jois, GB+PB Neusiedl/See",Austria,20th century,1954
+MV_215,NMW 34293,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,"Lainzer Tiergarten, Johannserkogel",Austria,20th century,1986
+MV_216,NMW 73431,NHM Vienna,Sus scrofa,Wild boar,This Study,wild,"Unterwart, Oberwart",Austria,21st century,2016
+DM_C01,NA,Adametz collection,Environmental control,Environmental control,This study,NA,NA,NA,NA,NA
+HM_038,NA,NHM London,Environmental control,Environmental control,This study,NA,NA,NA,NA,NA
+MS_C02,NA,NMS,Environmental control,Environmental control,This study,NA,NA,NA,NA,NA
+MV_C02,NA,NHM Vienna,Environmental control,Environmental control,This study,NA,NA,NA,NA,NA
+MV_C03,NA,NHM Vienna,Environmental control,Environmental control,This study,NA,NA,NA,NA,NA
+LB_9,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_6,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_5,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_4,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_3,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_26,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_25,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_24,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_23,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_21,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_2,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_19,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_18,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_17,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_16,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_15,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_14,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+LB_11,NA,NA,Library blank,Library blank,This study,NA,NA,NA,NA,NA
+EB_8_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_8_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_7_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_7_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_6_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_5_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_5_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_4_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_4_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_3_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_3_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_26_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_26_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_25_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_25_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_24_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_24_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_23,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_22,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_21,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_19_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_19_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_18_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_18_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_16,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_15_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_15_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_14_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_13_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_13_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_12_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_12_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_11_2,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
+EB_11_1,NA,NA,Extraction blank,Extraction blank,This study,NA,NA,NA,NA,NA
