@@ -48,6 +48,12 @@ low_prev <- read.csv(file.path(outdir, "community_analysis", "assess_contaminati
 
 contam <- unique(c(abund_negs$x, low_prev$x))
 
+# Poorly preserved samples
+contaminated <- read.csv(file.path(outdir, "community_analysis", "assess_contamination", "contaminated_samples.csv"))
+shallow <- read.csv(file.path(outdir, "community_analysis", "assess_contamination", "shallow_samples.csv"))
+
+bad_samples <- unique(c(contaminated$x, shallow$x))
+
 # Sample metadata
 metadata <- read.csv(file.path(indir, "sample_metadata.csv")) # Sample metadata
 contig_info <- read.table(file.path(outdir, "M1_contig_assemblies", "contig_info_per_sample.txt"), header=TRUE)
@@ -227,8 +233,8 @@ phy_gene_clr <- transform(phy_gene, "clr")
 saveRDS(phy_gene, file.path(subdir, "phy_gene.RDS"))
 saveRDS(phy_gene_clr, file.path(subdir, "phy_gene_clr.RDS"))
 
-# Remove low content samples and genes that do not pass the filters
-phy_gene_f <- prune_samples(!(sample_names(phy_gene) %in% low_content_samples), phy_gene)
+# Remove low content and poorly preserved samples identified by taxonomic analysis
+phy_gene_f <- prune_samples(!(sample_names(phy_gene) %in% c(low_content_samples, bad_samples)), phy_gene)
 phy_gene_f <- subset_samples(phy_gene_f, !is.neg)
 phy_gene_f <- prune_taxa(taxa_sums(phy_gene_f) > 0, phy_gene_f)
 
