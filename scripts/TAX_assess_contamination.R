@@ -349,7 +349,7 @@ decom_tbl <- data.frame(phy_sp@sam_data) %>%
   # turn all NAs to 0 (for plotting)
   mutate_if(is.numeric, ~replace(., is.na(.), 0)) %>%
   # Calculate oral to soil+skin ratio
-  mutate(oral_contam_ratio = (p_aOral + p_mOral)/(p_Sediment.Soil + p_Skin))
+  mutate(oral_contam_ratio = (p_OralH + p_OralMM +p_OralTM)/(p_Sediment.Soil + p_Skin))
 
 decom_tbl_long <- decom_tbl %>%
   # Pivot longer
@@ -357,11 +357,11 @@ decom_tbl_long <- decom_tbl %>%
 
 # Turn source into a factor
 decom_tbl_long$Source <- factor(decom_tbl_long$Source,
-                                levels = c("p_aOral", "p_mOral", "p_Sediment.Soil", "p_Skin", "p_Unknown"))
+                                levels = c("p_OralH", "p_OralMM", "p_OralTM", "p_Rumen", "p_Sediment.Soil", "p_Skin", "p_Unknown"))
 
 # Order samples by oral proportion
 sample_levels <- decom_tbl %>%
-  arrange(Genus, Domestication, desc(p_aOral + p_mOral)) %>% pull(new_name)
+  arrange(Genus, Domestication, desc(p_OralH + p_OralMM + p_OralTM)) %>% pull(new_name)
 
 decom_tbl_long$new_name <- factor(decom_tbl_long$new_name, levels = sample_levels)
 decom_tbl$new_name <- factor(decom_tbl$new_name, levels = sample_levels)
@@ -370,7 +370,7 @@ decom_tbl$new_name <- factor(decom_tbl$new_name, levels = sample_levels)
 decom_tbl_long <- decom_tbl_long %>% arrange(Genus, Domestication, new_name, Source)
 
 # Palette for decom barplot
-source_palette <- list("p_aOral"="#E54457", "p_mOral"="#AB0A1D", "p_Sediment.Soil"="#B2AD0B", "p_Skin"="#FFCC73", "p_Unknown"="#AAAAAA")
+source_palette <- list("p_OralH"="#EB3838", "p_OralTM"="#A20404", "p_OralMM"="#FFAEAE", "p_Rumen"="#C4D307", "p_Sediment.Soil"="#666200", "p_Skin"="#AD703A", "p_Unknown"="#AAAAAA")
 
 # Plot decom results
 p_d <-
@@ -378,20 +378,20 @@ p_d <-
   geom_bar(stat = "identity", colour = NA) +
   facet_grid(Species~., space = "free_y", scales = "free_y", switch = "y") +
   scale_fill_manual(values = source_palette, name = "",
-                    labels = c("ancient oral", "modern oral", "sediment/soil", "skin", "unknown")) +
+                    labels = c("human oral", "marine oral", "terrestrial oral", "rumen", "sediment/soil", "skin", "unknown")) +
   scale_x_continuous(expand = c(0,0)) + 
   theme(legend.position = "top",
+        legend.key.spacing.x = unit(2, 'cm'),
         axis.text.y = element_blank(), axis.ticks.y = element_blank(),
         axis.title.y = element_blank(), axis.title.x = element_blank(),
-        strip.text = element_text(size = 10),
+        strip.text = element_blank(), strip.background = element_blank(),
         plot.margin = margin(t=1, r=10, b=1, l=1)) + 
   guides(fill = guide_legend(ncol = 2))
 
 # Plot oral to contam ratio
-p_r <- ggplot(data = decom_tbl, aes(x = oral_contam_ratio, fill = oral_contam_ratio, y = new_name)) +
+p_r <- ggplot(data = decom_tbl, aes(x = oral_contam_ratio, y = new_name)) +
   geom_point(shape = 21) +
   facet_grid(Species~., space = "free_y", scales = "free_y", switch = "y") +
-  scale_colour_viridis_c() +
   theme(legend.position="none",
         axis.text.y = element_blank(), axis.ticks.y = element_blank(),
         axis.title.y = element_blank(),
@@ -399,14 +399,14 @@ p_r <- ggplot(data = decom_tbl, aes(x = oral_contam_ratio, fill = oral_contam_ra
         strip.background = element_blank()) +
   # Add line at ratio = 1
   geom_vline(xintercept = 1, linetype = "dashed") +
-  xlab("oral to\nsoil+skin\nratio") +
+  xlab("\noral to\nsoil+skin\nratio") +
   scale_x_log10(breaks = c(0.1, 1, 10))
 
 #### Total sample content (taxa sums) ####
 
 # Taxa sums per sample
 content <- data.frame(total_abundance = sample_sums(phy_sp),
-                      new_name = sample_names(phy_sp_clr),
+                      new_name = factor(sample_names(phy_sp_clr), levels = sample_levels),
                       Species = phy_sp@sam_data$Species)
 
 p_c <- ggplot(content, aes(x = total_abundance, y = new_name)) +

@@ -189,7 +189,7 @@ taxa_names(phy_sp) <- make.unique(as.vector(phy_sp@tax_table[,"species"]))
 phy_sp@sam_data$taxa_raw <- estimate_richness(phy_sp, measures="Observed")$Observed
 
 # Calculate oral to soil ratio according to DecOM results
-phy_sp@sam_data <- phy_sp@sam_data %>% data.frame %>% mutate(oral_to_soil_ratio=(p_mOral + p_aOral)/p_Sediment.Soil) %>% sample_data
+phy_sp@sam_data <- phy_sp@sam_data %>% data.frame %>% mutate(oral_to_soil_ratio=(p_OralH + p_OralMM +p_OralTM)/p_Sediment.Soil) %>% sample_data
 
 # CLR-normalisation
 phy_sp_clr <- phy_sp %>% transform('clr')
