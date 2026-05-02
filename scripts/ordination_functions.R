@@ -12,6 +12,7 @@ centroids <- function(ordination, phyloseq) {
     cbind(select(data.frame(phyloseq@sam_data), c(Common.name, Species, Genus, Domestication)))
   # Group and calculate means
   centroids <- ord_df %>% group_by(Common.name, Species, Genus, Domestication) %>%
+          filter(Domestication != "feral") %>%
           summarise_all(.funs = mean, na.rm = TRUE)
   centroids <- left_join(centroids, phylopics, by = c("Species" = "Species"))
   return(centroids)
@@ -164,8 +165,10 @@ custom_ord_plot <- function(phyloseq, ordination, colour_var, shape_var, arrows_
   # Get species centroids
   centroids <- centroids(ord@ord, phyloseq)
   # Plot
-  p <- ord_plot(ord, colour=colour_var, shape=shape_var, alpha = 0.8) +
+  p <- ord_plot(ord, colour=colour_var, shape=shape_var, alpha = 0, auto_caption = NA,
+                constraint_lab_style = list(size = 4, alpha = 0.8), constraint_lab_length = 2.5) +
     custom_theme() +
+    geom_point(size = 2, alpha = 0.8, aes_string(colour = colour_var, shape = shape_var)) +
     geom_phylopic(data = centroids, aes_string(colour = colour_var), uuid = centroids$uid, fill = "transparent", height = 0.6)
   # Add the correct scales
   if (colour_var == "Order_grouped") {
@@ -195,15 +198,20 @@ custom_ord_plot <- function(phyloseq, ordination, colour_var, shape_var, arrows_
         scale_shape_manual(values=dom_shape_palette, name = "Domestication")
   }
   # Add more layers
+  colour_shape_map <- data.frame(phyloseq@sam_data) %>% select(all_of(c(colour_var, shape_var))) %>% distinct() %>%
+        arrange(!!sym(colour_var)) %>% filter(Domestication != "feral") %>%
+        mutate(shape = dom_shape_palette[!!sym(shape_var)])
   p <- p +
-    theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
-    guides(shape = guide_legend(ncol = 1), colour = guide_legend(ncol = 3, byrow = FALSE))
+    theme(legend.position = "bottom", legend.direction = "vertical") +
+    guides(shape = guide_legend(ncol = 1),
+           colour = guide_legend(ncol = 2, byrow = TRUE, override.aes = list(shape = colour_shape_map$shape)))
   # If PCA, add taxon arrows
   if (type == "PCA") {
     p <- p +
       new_scale_colour() +
       geom_segment(data = arrows_filt, aes(x = 0, y = 0, xend = PC1*arrows_scaling, yend = PC2*arrows_scaling, colour = phylum_grouped), linewidth = 0.5, alpha = 0.5) +
-      scale_color_manual(values = phylum_palette, name = "Microbial phylum")
+      scale_color_manual(values = phylum_palette, name = "Microbial phylum") +
+      guides(colour = guide_legend(ncol = 2, byrow = TRUE))
   }
   # If RDA add marginals
   if (type == "RDA") {
@@ -233,7 +241,7 @@ taxa_plot <- function(ord, phyloseq, ntaxa = 20) {
     scale_linetype_identity() +
     scale_color_manual(values = phylum_palette, name = "Phylum") +
     geom_label(aes(label = label, x = RDA1, y = RDA2),
-              size = 1.7, alpha = 0.5, vjust = ifelse(taxa_rda$RDA2 < 0, 1, 0)) +
+              size = 3, alpha = 0.5, vjust = ifelse(taxa_rda$RDA2 < 0, 1, 0)) +
     scale_size_continuous(range = c(0.01, 2), name = "Mean CLR-abundance") +
     custom_theme() + xlab("RDA1 scores") + ylab("RDA2 scores") +
     theme(legend.position = "bottom", legend.title = element_blank()) + guides(colour = guide_legend(nrow = 3)) +
