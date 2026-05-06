@@ -61,9 +61,9 @@ phy_genus <- phy_genus %>%
 # Run ANCOMBC with group = Species to identify structural zeroes
 
 ancom <- ancombc2(data = phy_genus,
-               fix_formula = "Species + contig_reads_count",
+               fix_formula = "Species",
                tax_level = "genus", 
-               p_adj_method = "holm", prv_cut = 0.1, 
+               p_adj_method = "holm", prv_cut = 0, 
                group="Species",
                struc_zero = TRUE,
                lib_cut = 0,
