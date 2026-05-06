@@ -45,6 +45,7 @@ source(file.path("ordination_functions.R"))
 
 # Phyloseq object
 phy_gene_f <- readRDS(file.path(datadir, "phy_gene_f.RDS"))
+phy_gene_f_clr <- readRDS(file.path(datadir, "phy_gene_f_clr.RDS"))
 
 # Gene abundance stratified
 gene_str <- read.table(file.path(datadir, "gene_abundance_stratified_modified.tsv"),
@@ -62,7 +63,7 @@ add_paths <- FALSE # Change this to append more taxa
 # Check if file exists
 if (file.exists(file.path(subdir, "ko_to_pathways.csv"))) {
   cat("Loading ko_to_pathways.csv\n")
-  pathway_hits_df <- read.csv(file.path(subdir, "ko_to_pathways.csv"), stringsAsFactors = FALSE)
+  pathway_hits_df <- read.csv(file.path(subdir, "ko_to_pathways.csv"), header = FALSE, stringsAsFactors = FALSE)
   colnames(pathway_hits_df) <- c("path", "ko")
 } 
 if (add_paths == TRUE | !file.exists(file.path(subdir, "ko_to_pathways.csv"))) {
@@ -517,14 +518,6 @@ phy_pathway_clr <- microbiome::transform(phy_pathway, "clr")
 saveRDS(phy_pathway, file.path(subdir, "phy_pathway.RDS"))
 saveRDS(phy_pathway_clr, file.path(subdir, "phy_pathway_clr.RDS"))
 
-# Keep only metabolism pathways
-phy_metabolism <- subset_taxa(phy_pathway, grepl("Metabolism;", path_class))
-phy_metabolism_clr <- microbiome::transform(phy_metabolism, "clr")
-
-# Save
-saveRDS(phy_metabolism, file.path(subdir, "phy_metabolism.RDS"))
-saveRDS(phy_metabolism_clr, file.path(subdir, "phy_metabolism_clr.RDS"))
-
 #######################
 #### PLOT PATHWAYS ####
 #######################
@@ -539,8 +532,9 @@ path_info_filt <- path_info_filt %>% filter(mean_completeness > 0.2 & path_class
 # Keep only KOs present in the data and average abundance in animalivores and herbivores
 kos <- phy_gene_f_clr %>% subset_taxa(taxa_names(phy_gene_f) %in% str_remove(pathway_kos_filt$kos, "ko:")) %>%
     subset_samples(Domestication %in% c("domestic", "wild")) %>% psmelt() %>%
-    group_by(OTU, diet.general) %>% summarise(median_abundance = median(Abundance)) %>%
-    pivot_wider(names_from = Domestication, values_from = median_abundance, values_fill = 0)
+    group_by(OTU, Species, Domestication) %>% summarise(mean_abundance = mean(Abundance)) %>%
+    group_by(OTU, Domestication) %>% summarise(mean_abundance = mean(mean_abundance)) %>%
+    pivot_wider(names_from = Domestication, values_from = mean_abundance, values_fill = 0)
 
 # Add pathway info
 kos <- pathway_hits_df[c("path", "ko")] %>% mutate(ko = str_remove(ko, "ko:")) %>%
