@@ -27,8 +27,8 @@ plot_setup(file.path("..", "input", "palettes"))
 #######################
 
 # Bin metadata
-bac_meta <- read.table(file.path(subdir, "bac_meta.tsv"), sep="\t", header=TRUE)
-ar_meta <- read.table(file.path(subdir, "ar_meta.tsv"), sep="\t", header=TRUE)
+bac_meta <- read.table(file.path(subdir, "bac_meta.tsv"), sep="\t", header=TRUE, quote = "", comment = "")
+ar_meta <- read.table(file.path(subdir, "ar_meta.tsv"), sep="\t", header=TRUE, quote = "", comment = "")
 
 # MAG trees
 bac_tree <- read.tree(file = file.path(subdir, "bac_tree.tree"))

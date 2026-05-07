@@ -27,8 +27,8 @@ plot_setup(file.path("..", "input", "palettes"))
 #######################
 
 # MAG metadata
-bac_meta <- read.table(file.path(outdir, "mags", "bac_meta.tsv"), sep="\t", header=TRUE)
-ar_meta <- read.table(file.path(outdir, "mags", "ar_meta.tsv"), sep="\t", header=TRUE)
+bac_meta <- read.table(file.path(outdir, "mags", "bac_meta.tsv"), sep="\t", header=TRUE, quote = "", comment = "")
+ar_meta <- read.table(file.path(outdir, "mags", "ar_meta.tsv"), sep="\t", header=TRUE, quote = "", comment = "")
 
 # MAG trees
 bac_tree <- read.tree(file = file.path(outdir, "mags", "bac_tree.tree"))
@@ -97,20 +97,20 @@ p2 <- ggplot(data = map_stats_hq, aes(x = identity, y = coverage, colour = mappe
         geom_point(alpha = 0.5, size = 0.1) +
         geom_point(data = filter(map_stats_hq, assembly_sample), alpha = 1, size = 0.2, colour = "red") +
         scale_x_log10() +
-        geom_vline(xintercept = 99, linewidth = 0.5, linetype = "dashed", color = "black") +
-        geom_hline(yintercept = 80, linewidth = 0.5, linetype = "dashed", color = "black") +
+        geom_vline(xintercept = min_id, linewidth = 0.5, linetype = "dashed", color = "black") +
+        geom_hline(yintercept = min_cov, linewidth = 0.5, linetype = "dashed", color = "black") +
         scale_colour_viridis_b(name = "Mapped reads", option = "mako", trans = "log10") +
         theme(legend.position = "top", legend.text = element_text(size = 6, angle = 45, hjust = 1))
 
 p3 <- ggplot(data = map_stats_hq, aes(x = coverage, fill = assembly_sample)) +
         geom_histogram(alpha=0.5) +
-        geom_vline(xintercept = 80, linewidth = 0.5, linetype = "dashed", color = "black") +
+        geom_vline(xintercept = min_cov, linewidth = 0.5, linetype = "dashed", color = "black") +
         scale_fill_manual(name = "Assembly sample", values = c("TRUE" = "red", "FALSE" = "grey")) +
         theme(legend.position = "top")
 
 p4 <- ggplot(data = map_stats_hq, aes(x = identity, fill = assembly_sample)) +
         geom_histogram(alpha=0.5) +
-        geom_vline(xintercept = 99, linewidth = 0.5, linetype = "dashed", color = "black") +
+        geom_vline(xintercept = min_id, linewidth = 0.5, linetype = "dashed", color = "black") +
         scale_fill_manual(name = "Assembly sample", values = c("TRUE" = "red", "FALSE" = "grey")) +
         theme(legend.position = "top")
 
@@ -142,7 +142,7 @@ write.csv(map_stats_per_host, file = file.path(subdir, "hq_mag_mapping_stats_per
 #### Plot mean and median stats per bin per host species ####
 # Filter only good mappings
 map_stats_per_host_filt <-
-        map_stats_per_host %>% filter(mean_identity > 97 & mean_reads > 1000)
+        map_stats_per_host %>% filter(mean_identity > min_id & mean_reads > min_reads)
 
 # Plot mean stats
 p <- ggplot(data = map_stats_per_host_filt, aes(x = host_species, y = label)) +
@@ -158,7 +158,7 @@ ggsave(file.path(subdir, "hq_mag_cov_and_id_mean.png"), plot = p, width = 6, hei
 
 # Plot median stats
 map_stats_per_host_filt <-
-        map_stats_per_host %>% filter(median_identity > 97 & median_reads > 1000)
+        map_stats_per_host %>% filter(median_identity > min_id & median_reads > min_reads)
 
 p <- ggplot(data = map_stats_per_host_filt, aes(x = host_species, y = label)) +
     geom_point(aes(size = median_reads, colour = median_coverage)) +
@@ -173,7 +173,7 @@ ggsave(file.path(subdir, "hq_mag_cov_and_id_median.png"), plot = p, width = 6, h
 
 # Plot max stats
 map_stats_per_host_filt <-
-        map_stats_per_host %>% filter(max_identity > 97 & max_reads > 1000)
+        map_stats_per_host %>% filter(max_identity > min_id & max_reads > min_reads)
 
 p <- ggplot(data = map_stats_per_host_filt, aes(x = host_species, y = label)) +
     geom_point(aes(size = max_reads, colour = max_coverage)) +
@@ -190,7 +190,7 @@ ggsave(file.path(subdir, "hq_mag_cov_and_id_max.png"), plot = p, width = 6, heig
 
 mag_pres_per_sp <- 
             # Keep only mappings passing the thresholds
-            map_stats_hq %>% filter((identity >= min_id & coverage >= min_cov) | assembly_sample) %>%
+            map_stats_hq %>% filter((identity >= min_id & coverage >= min_cov & mapped_reads > min_reads) | assembly_sample) %>%
             group_by(host_species, host_genus, label, bin) %>%
             # Get maximum identity, coverage and mapped reads per species. Also indicate if the MAG was assembled from that species
             summarise(max_identity = max(identity),
