@@ -27,7 +27,7 @@ subdir <- normalizePath(file.path(outdir, "mag_loss_gain"))
 if (!dir.exists(subdir)) dir.create(subdir, recursive = TRUE)
 
 ## Set up for plotting
-source(file.path("plot_setup.R"))
+source(file.path("modules", "plot_setup.R"))
 plot_setup(file.path("..", "input", "palettes"))
 theme_set(custom_theme())
 
@@ -39,8 +39,8 @@ theme_set(custom_theme())
 sample_metadata <- read.csv(file.path(indir, "sample_metadata.csv"), header=TRUE)
 
 # Bin metadata
-bac_meta <- read.table(file.path(outdir, "bac_meta_drep.tsv"), sep="\t", header=TRUE)
-ar_meta <- read.table(file.path(outdir, "ar_meta_drep.tsv"), sep="\t", header=TRUE)
+bac_meta <- read.table(file.path(outdir, "bac_meta_drep.tsv"), sep="\t", header=TRUE, quote = "", comment = "")
+ar_meta <- read.table(file.path(outdir, "ar_meta_drep.tsv"), sep="\t", header=TRUE, quote = "", comment = "")
 
 # Presence absence of MAGs
 presabs <- read.csv(file.path(outdir, "mag_mapping_stats", "hq_mag_presence_per_host.csv"))

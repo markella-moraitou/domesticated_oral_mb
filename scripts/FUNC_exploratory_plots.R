@@ -34,12 +34,12 @@ subdir <- normalizePath(file.path("..", "output", "function", "exploratory_plots
 dir.create(subdir, recursive = TRUE, showWarnings = FALSE)
 
 ## Set up for plotting
-source(file.path("plot_setup.R"))
+source(file.path("modules", "plot_setup.R"))
 plot_setup(file.path("..", "input", "palettes"))
 theme_set(custom_theme())
 
 # Get ordination functions
-source(file.path("ordination_functions.R"))
+source(file.path("modules", "ordination_functions.R"))
 
 #######################
 #####  LOAD INPUT #####

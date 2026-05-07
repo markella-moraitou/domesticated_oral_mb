@@ -25,7 +25,7 @@ subdir <- normalizePath(file.path(magdir, "mag_triplets")) # subdirectory for th
 
 if(!dir.exists(subdir)) dir.create(subdir, recursive = TRUE)
 
-source(file.path("plot_setup.R"))
+source(file.path("modules", "plot_setup.R"))
 plot_setup(file.path("..", "input", "palettes"))
 
 #######################

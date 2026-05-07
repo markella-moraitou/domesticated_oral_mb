@@ -1,0 +1,135 @@
+import argparse
+import pathlib
+import pandas as pd
+from statistics import mean
+
+# Use CAT output (*.contig2classification_named.txt) and mappings stats from KMA
+# and combines them to an abundance table to use with phyloseq
+
+def filter_tax_ranks(df, tax_ranks):
+    # Remove rows where all selected ranks have no support
+    df_filt = df[df["classification"] == "taxid assigned"]
+    mask = df_filt[tax_ranks].apply(lambda row: any(val != "no support" for val in row), axis = 1)
+    df_filt = df_filt[mask]
+    return(df_filt)
+
+def parse_depth_files(path, suf, min_id, min_breadth):
+    # Load all read depth files and combine into one
+    print("Loading read depth files in " + str(path))
+    depth_files = list(path.glob(f"*{suf}"))
+    print(str(len(depth_files)) + " files found. Combining tables...")
+    dfs = []
+    i = 0
+    for file in depth_files:
+        i += 1
+        # Extract sample name
+        sample = file.name.replace(suf, "")
+        if i % 10 == 0:
+            print(str(i) + ": Parsing " + sample)
+        df = pd.read_csv(file, sep = "\t")
+        df["Sample"] = sample
+        dfs.append(df)
+    combined = pd.concat(dfs, ignore_index=True)
+    print("The combined mapping table contains " + str(combined.shape[0]) + " contigs\n")
+    combined_filt = combined[(combined["identity"] >= min_id) & (combined["coverage"] >= min_breadth)]
+    combined_filt = combined_filt[["contigName", "Sample", "mapped_reads"]]
+    print("After filtering by " + str(min_id) + "% identity " + str(min_breadth) + "% breadth of coverage: " + str(combined_filt.shape[0]) + " contigs\n")
+    return(combined_filt)
+
+def parse_cat_files(path, tax_ranks):
+    # Load all read CAT files and combine into one, keep only lines with desired tax ranks
+    print("Loading contig taxonomy results in " + str(path))
+    tax_files = list(path.glob(f"*contig2classification_named.txt"))
+    print(str(len(tax_files)) + " files found. Combining tables...")
+    dfs = []
+    i = 0
+    for file in tax_files:
+        i += 1
+        # Extract sample name
+        sample = file.name.replace(".contig2classification_named.txt", "")
+        if i % 10 == 0:
+            print(str(i) + ": Parsing " + sample)
+        df = pd.read_csv(file, sep = "\t")
+        # Rename to match depth file
+        df = df.rename(columns={"# contig": "contigName"})
+        # Change contigName col to match
+        df["contigName"] = df["contigName"].replace(r'_final_contigs', '', regex = True)
+        # Filter
+        df_filt = filter_tax_ranks(df, tax_ranks)
+        dfs.append(df_filt)
+    combined = pd.concat(dfs, ignore_index=True)
+    print("The combined CAT table contains " + str(combined.shape[0]) + " contigs\n")
+    return(combined)
+
+def get_taxonomy_table(tax_df):
+    # Keep all unique taxonomy entries
+    all_ranks = ["superkingdom", "phylum", "class", "order", "family", "genus", "species"]
+    tax_filt = tax_df[["lineage"] + all_ranks].copy()
+    # Across all column remove suffix and support value to keep unique names
+    tax_filt[all_ranks] = tax_filt[all_ranks].apply(lambda col: col.str.replace(r"[a-z]__", "", regex = True).str.replace(": ?\d\.\d+$", "", regex = True))
+    tax_filt = tax_filt.drop_duplicates()
+    print(str(tax_filt.shape[0]) + " entries in taxonomy table\n")
+    return(tax_filt)
+
+def get_abundance_table(abund, tax):
+    print("Combining taxonomy and abundance tables")
+    combined = pd.merge(abund, tax, on="contigName", how="left")
+    # Make sure depth is read as numeric
+    combined["mapped_reads"] = pd.to_numeric(combined["mapped_reads"])
+    combined.drop('contigName', axis=1, inplace=True)
+    print("Reformatting into abundance table")
+    # Get median abundances by sample and lineage and then pivot wider
+    grouped = combined[["Sample", "lineage", "mapped_reads"]].groupby(["Sample", "lineage"]).sum().reset_index()
+    wide = grouped.pivot(index='lineage', columns='Sample', values='mapped_reads')
+    # Turn NAs to zeros
+    wide.fillna(0, inplace = True)
+    print("Resulting abundance table contains " + str(wide.shape[0]) + " taxa and " + str(wide.shape[1]) + " samples\n")
+    return(wide.reset_index())
+
+def main():
+    parser = argparse.ArgumentParser(description='Get abundance table from CAT annotations and contig read depths')
+    parser.add_argument('--mapping_dir', type=pathlib.Path, help='Path containing read depth files')
+    parser.add_argument('--mapping_suffix', default = "_mapping_stats.txt", type=str, help='Suffix of read depth files')
+    parser.add_argument('--mapping_minid', default = 98, type=int, help='Minimum percent identity to filter by (default: 98)')
+    parser.add_argument('--mapping_mincov', default = 10, type=int, help='Minimum breadth of coverage to filter by (default: 10)')
+    parser.add_argument('--taxonomy_dir', type=pathlib.Path, help='Path containing taxonomic assignments (*.contig2classification_named.txt files) generated by CAT')
+    parser.add_argument('--tax_ranks', type=str, default = "species", help='Taxonomic ranks to be used for the table (options are superkingdom, phylum, class, order, family, genus, species, and can be provided as a comma-separated list e.g. "species,genus")')
+    args = parser.parse_args()
+    mapping_dir = args.mapping_dir
+    mapping_suffix = args.mapping_suffix
+    min_id = args.mapping_minid
+    min_cov = args.mapping_mincov
+    tax_dir = args.taxonomy_dir
+    ranks = args.tax_ranks
+    print("\nParameters:")
+    print("Mapping directory: " + str(mapping_dir) + "\n")
+    print("Mapping file suffix: " + mapping_suffix + "\n")
+    print("Minimum percent identity: " + str(min_id) + "\n")
+    print("Minimum breadth of coverage: " + str(min_cov) + "\n")
+    print("Taxonomy directory: " + str(tax_dir) + "\n")
+    print("Taxonomic ranks: " + ranks + "\n")
+    
+    # Parse taxonomic ranks
+    ranks_ls = ranks.split(",")
+    ranks_ls = [ x.strip() for x in ranks_ls ]
+    
+    # Parse mapping files and decompress if necessary
+    depths_combined = parse_depth_files(path = mapping_dir, suf = mapping_suffix, min_id = min_id, min_breadth = min_cov).astype(str)
+    tax_combined = parse_cat_files(tax_dir, tax_ranks = ranks_ls).astype(str)
+    
+    # Keep only contigs present in depth table
+    tax_combined = tax_combined[tax_combined["contigName"].isin(depths_combined["contigName"])].copy()
+    print("After keeping only contigs present in depth table: " + str(tax_combined.shape[0]) + " contigs\n")
+    print("Unique lineages: " + str(tax_combined["lineage"].nunique()) + "\n")
+    
+    # Combine the two
+    ab_table = get_abundance_table(depths_combined, tax_combined)
+    ab_table.to_csv("abundance_table_CAT.tsv", sep = "\t", index = False)
+    
+    # Get taxonomy table
+    tax_table = get_taxonomy_table(tax_combined)
+    tax_table.to_csv("taxonomy_table_CAT.tsv", sep = "\t", index = False)
+
+
+if __name__ == "__main__":
+    main()

@@ -19,7 +19,7 @@ indir <- normalizePath(file.path("..", "input")) # Directory with phyloseq outpu
 outdir <- normalizePath(file.path("..", "output")) # Directory with output
 subdir <- normalizePath(file.path(outdir, "mags")) # subdirectory for the output of this script
 
-source(file.path("plot_setup.R"))
+source(file.path("modules", "plot_setup.R"))
 plot_setup(file.path("..", "input", "palettes"))
 
 #######################

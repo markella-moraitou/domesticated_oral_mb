@@ -30,11 +30,11 @@ phydir <- normalizePath(file.path("..", "output", "community_analysis", "phylose
 if (!dir.exists(subdir)) dir.create(subdir, recursive = TRUE)
 
 ## Set up for plotting
-source(file.path("plot_setup.R"))
+source(file.path("modules", "plot_setup.R"))
 plot_setup(file.path("..", "input", "palettes"))
 theme_set(custom_theme())
 
-source(file.path("ordination_functions.R"))
+source(file.path("modules", "ordination_functions.R"))
 
 #######################
 #####  LOAD INPUT #####

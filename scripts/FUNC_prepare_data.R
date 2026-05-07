@@ -28,7 +28,7 @@ dramdir <- normalizePath(file.path("..", "software", "DRAM", "data")) # Installa
 dir.create(subdir, recursive = TRUE, showWarnings = FALSE)
 
 ## Set up for plotting
-source(file.path("plot_setup.R"))
+source(file.path("modules", "plot_setup.R"))
 plot_setup(file.path("..", "input", "palettes"))
 theme_set(custom_theme())
 

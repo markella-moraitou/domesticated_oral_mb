@@ -28,7 +28,7 @@ outdir <- normalizePath(file.path("..", "output", "community_analysis"))
 phydir <- normalizePath(file.path(outdir, "phyloseq_objects")) # Directory with phyloseq objects
 
 ## Set up for plotting
-source(file.path("plot_setup.R"))
+source(file.path("modules", "plot_setup.R"))
 plot_setup(file.path("..", "input", "palettes"))
 theme_set(custom_theme())
 
