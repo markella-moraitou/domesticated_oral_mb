@@ -139,7 +139,7 @@ mcmc_out_human <- mcmcglmm_wrapper(data_human, formula, "mcmcglmm_human", 1)
 
 mcmc_res_human <- process_mcmcglmm_out(mcmc_out_human, "mcmcglmm_human")
 
-mcmc_res_human <- mcmc_res_human %>% rename(OTU = pathway)
+mcmc_res_human <- mcmc_res_human %>% rename(pathway = OTU)
 
 #########################
 #### COMBINE RESULTS ####
@@ -164,8 +164,8 @@ res <- bind_rows(mcmc_res_all, mcmc_res_equus, mcmc_res_ovis, mcmc_res_sus, mcmc
 
 write.csv(res, file.path(subdir, "mcmcglmm_res_func.csv"), quote = TRUE, row.names = FALSE)
 
-# Keep only taxa that are differentially abundant in any of the analyses
-signif_paths <- res %>% filter(pMCMC_adj < 0.05) %>% pull(path_name) %>% unique
+# Keep only taxa that are differentially abundant in any of the wild vs dom analyses
+signif_paths <- res %>% filter(pMCMC_adj < 0.05 & dataset != "Human vs Wild") %>% pull(path_name) %>% unique
 
 # Order by difference of abundance in the largest subset
 path_order <- res %>% filter(path_name %in% signif_paths) %>% filter(dataset == "Domestic vs Wild (All)") %>%
@@ -198,23 +198,26 @@ ggsave(p, filename = file.path(subdir, "mcmcglmm_res_heatmap.png"), width = 5, h
 
 # Also plot coeffs as scatterplots to show if they correlate
 res_filt$dataset <- factor(gsub("\n", " ", res_filt$dataset), level = gsub("\n", " ", levels(res_filt$dataset)))
+res_filt$signif <- ifelse(res_filt$pMCMC_adj < 0.05, "TRUE", "FALSE")
 
 data_palette <- darken(species_palette[c("Equus quagga", "Ovis ammon", "Sus scrofa", "Homo sapiens")])
 names(data_palette) <- c("Horse vs Zebra", "Sheep vs Argali", "Pig vs Boar",  "Human vs Wild")
 
 p <- filter(res_filt, c(!dataset %in% c("Domestic vs Wild (All)", "Human vs Wild"))) %>%
     mutate(taxon = factor(path_name, levels = path_order)) %>%
-    ggplot(aes(y = path_name, x = coeff)) +
-    geom_vline(xintercept = 0, linewidth = 0.3, colour = "grey60") +
-    geom_point(aes(colour = dataset, shape = dataset), size = 3, alpha = 0.8) +
+    ggplot(aes(x = path_name, y = coeff)) +
+    geom_hline(yintercept = 0, linewidth = 0.3, colour = "grey60") +
+    geom_point(aes(colour = dataset, shape = dataset, fill = dataset, alpha = signif), size = 3) +
     geom_line(aes(group = pathway), linetype = "dotted", size = 0.3) +
     scale_colour_manual(values = data_palette, name = "") +
-    scale_shape_manual(values = c(0, 2, 4), name = "") +
-    theme(legend.position = "top", legend.direction = "vertical",
-          axis.text.y = element_text(size = 8), axis.title.y = element_blank()) +
-    xlab("pathway - domestic\ncoefficient")
+    scale_fill_manual(values = data_palette, name = "") +
+    scale_shape_manual(values = c(22, 23, 25), name = "") +
+    scale_alpha_manual(values = c('FALSE' = 0.2, 'TRUE' = 0.8), name = "adj. pMCMC < 0.05") +
+    theme(legend.position = "right", legend.direction = "vertical",
+          axis.text.x = element_text(size = 10, hjust = 1, vjust = 0.5), axis.title.x = element_blank()) +
+    ylab("domestic coefficient")
 
-ggsave(p, filename = file.path(subdir, "mcmcglmm_coeff_comparison.png"), width = 6, height = 6)
+ggsave(p, filename = file.path(subdir, "mcmcglmm_coeff_comparison.png"), width = 10, height = 6)
 
 #########################
 #### PLOT ABUNDANCES ####
@@ -231,7 +234,7 @@ abundances <- phy_pathway_clr@otu_table %>% t %>% data.frame %>% rownames_to_col
 
 mcmc_abund <- res_filt %>% filter(pMCMC_adj < 0.05) %>%
             mutate(association = case_when(coeff < 0 ~ "wild+",
-                                           coeff > 0 ~ "dom+")) %>%
+                                           coeff > 0 ~ "wild-")) %>%
             mutate(dataset = str_remove_all(dataset, "\n.*")) %>%
             mutate(label = paste(association, dataset)) %>%
             # Combine labels for different results from the same OTU

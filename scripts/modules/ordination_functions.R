@@ -148,41 +148,48 @@ expand_palette <- function(subcategories_df, base_colours) {
 
 custom_ord_plot <- function(phyloseq, ordination, colour_var, shape_var, arrows_scaling, type) {
   #### Get arrows ####
-  # Get loading arrows coordinaties
-  arrows <- arrow_coord(ord@ord, axes = c(1, 2, 3))
-  # Get genus and phylum
-  arrows$genus <- as.character(phyloseq@tax_table[match(rownames(arrows),  phyloseq@tax_table[, "species"]), "genus"])
-  arrows$phylum <- as.character(phyloseq@tax_table[match(rownames(arrows),  phyloseq@tax_table[, "species"]), "phylum"])
-  arrows$superkingdom <- as.character(phyloseq@tax_table[match(rownames(arrows),  phyloseq@tax_table[, "species"]), "superkingdom"])
-  arrows$to_plot <- (rownames(arrows) %in% head(rownames(arrows), 100))
-  # Group phyla for better plotting
-  arrows <- arrows %>% mutate(phylum_grouped = factor(case_when(phylum %in% names(phylum_palette) ~ phylum,
-                                                          superkingdom == "Bacteria" ~ "Other Bacteria",
-                                                          superkingdom == "Archaea" ~ "Other Archaea"), levels = names(phylum_palette)))
-  # Keep only strongest associations
-  arrows_filt <- arrows %>% filter(to_plot) %>%
-                select(contains(c("1", "2")), phylum_grouped)
+  if (type == "PCA") {
+    # Get loading arrows coordinaties
+    arrows <- arrow_coord(ord@ord, axes = c(1, 2, 3))
+    # Get genus and phylum
+    arrows$genus <- as.character(phyloseq@tax_table[match(rownames(arrows),  phyloseq@tax_table[, "species"]), "genus"])
+    arrows$phylum <- as.character(phyloseq@tax_table[match(rownames(arrows),  phyloseq@tax_table[, "species"]), "phylum"])
+    arrows$superkingdom <- as.character(phyloseq@tax_table[match(rownames(arrows),  phyloseq@tax_table[, "species"]), "superkingdom"])
+    arrows$to_plot <- (rownames(arrows) %in% head(rownames(arrows), 100))
+    # Group phyla for better plotting
+    arrows <- arrows %>% mutate(phylum_grouped = factor(case_when(phylum %in% names(phylum_palette) ~ phylum,
+                                                            superkingdom == "Bacteria" ~ "Other Bacteria",
+                                                            superkingdom == "Archaea" ~ "Other Archaea"), levels = names(phylum_palette)))
+    # Keep only strongest associations
+    arrows_filt <- arrows %>% filter(to_plot) %>%
+                  select(contains(c("1", "2")), phylum_grouped)
+  }
   # Get species centroids
   centroids <- centroids(ord@ord, phyloseq)
   # Plot
+  pp_height <- diff(range(vegan::scores(ord@ord, display="sites", choices=2)[,1]))/15
   p <- ord_plot(ord, colour=colour_var, shape=shape_var, alpha = 0, auto_caption = NA,
-                constraint_lab_style = list(size = 4, alpha = 0.8), constraint_lab_length = 2.5) +
+                constraint_vec_style = vec_constraint(alpha = 0, linewidth = 0), constraint_lab_style = list(alpha = 0, size = 0, linewidth = 0)) +
     custom_theme() +
     geom_point(size = 2, alpha = 0.8, aes_string(colour = colour_var, shape = shape_var)) +
-    geom_phylopic(data = centroids, aes_string(colour = colour_var), uuid = centroids$uid, fill = "transparent", height = 0.6)
+    geom_phylopic(data = centroids, aes_string(colour = colour_var, fill = colour_var), uuid = centroids$uid, fill = "transparent", height = pp_height)
   # Add the correct scales
   if (colour_var == "Order_grouped") {
     p <- p +
         scale_color_manual(values=order_palette, name = "Host order")
+        scale_fill_manual(values=order_palette, name = "Host order")
   } else if (colour_var == "diet.general") {
     p <- p +
         scale_color_manual(values=diet_palette, name = "Estimated diet")
+        scale_fill_manual(values=diet_palette, name = "Estimated diet")
   } else if (colour_var == "habitat.general") {
     p <- p +
         scale_colour_manual(values=habitat_palette, name = "Habitat")
+        scale_fill_manual(values=habitat_palette, name = "Habitat")
   } else if (colour_var == "Species") {
     p <- p +
         scale_colour_manual(values=species_palette, name = "Species")
+        scale_fill_manual(values=species_palette, name = "Species")
   }
   if (shape_var == "diet.general") {
     p <- p +
@@ -200,7 +207,8 @@ custom_ord_plot <- function(phyloseq, ordination, colour_var, shape_var, arrows_
   # Add more layers
   colour_shape_map <- data.frame(phyloseq@sam_data) %>% select(all_of(c(colour_var, shape_var))) %>% distinct() %>%
         arrange(!!sym(colour_var)) %>% filter(Domestication != "feral") %>%
-        mutate(shape = dom_shape_palette[!!sym(shape_var)])
+        left_join(rownames_to_column(as.data.frame(dom_shape_palette), "Domestication")) %>%
+        rename(shape = dom_shape_palette)
   p <- p +
     theme(legend.position = "bottom", legend.direction = "vertical") +
     guides(shape = guide_legend(ncol = 1),

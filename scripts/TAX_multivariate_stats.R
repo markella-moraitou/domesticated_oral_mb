@@ -414,13 +414,16 @@ ggsave(file.path(subdir, "RDA_philr_screeplot.png"), p, width=3, height=3)
 
 ## SAMPLE PLOTS
 
-centroids <- centroids(ord@ord, phy_sp_philr)
+centroids_ord <- centroids(ord@ord, phy_sp_philr)
+
+pp_height <- diff(range(vegan::scores(ord@ord, display="sites", choices=2)[,1]))/15
 
 # Color by species
-p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0, auto_caption = NA) +
+p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0, auto_caption = NA,
+              constraint_vec_style = vec_constraint(alpha = 0, linewidth = 0), constraint_lab_style = list(alpha = 0, size = 0, linewidth = 0)) +
     geom_point(size = 2, alpha = 0.8, aes(colour = Species, shape = Domestication)) +
     custom_theme() +
-    geom_phylopic(data = centroids, aes(colour = Species), uuid = centroids$uid, fill = "transparent", height = 0.6) +
+    geom_phylopic(data = centroids_ord, aes(colour = Species), uuid = centroids_ord$uid, fill = "transparent", height = pp_height) +
     scale_colour_manual(values=species_palette, name = "Species") +
     scale_shape_manual(values=dom_shape_palette, name = "Domestication") +
     theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
@@ -455,13 +458,14 @@ ggsave(file.path(subdir, "RDA_philr_nohuman_screeplot.png"), p, width=3, height=
 
 ## SAMPLE PLOTS
 
-centroids <- centroids(ord@ord, phy_sp_philr_nohuman)
+centroids_ord <- centroids(ord@ord, phy_sp_philr_nohuman)
 
 # Color by species
-p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0, auto_caption = NA) +
+p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0, auto_caption = NA,
+              constraint_vec_style = vec_constraint(alpha = 0, linewidth = 0), constraint_lab_style = list(alpha = 0, size = 0, linewidth = 0)) +
     geom_point(size = 2, alpha = 0.8, aes(colour = Species, shape = Domestication)) +
     custom_theme() +
-    geom_phylopic(data = centroids, aes(colour = Species), uuid = centroids$uid, fill = "transparent", height = 0.6) +
+    geom_phylopic(data = centroids_ord, aes(colour = Species), uuid = centroids_ord$uid, fill = "transparent", height = pp_height) +
     scale_colour_manual(values=species_palette, name = "Species") +
     scale_shape_manual(values=dom_shape_palette, name = "Domestication") +
     theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +

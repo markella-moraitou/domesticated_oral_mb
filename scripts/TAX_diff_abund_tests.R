@@ -205,7 +205,7 @@ res_filt <- res %>% filter(OTU %in% signif_taxa) %>%
 p <- ggplot(data = res_filt, aes(x = dataset, y = OTU, fill = coeff)) +
     geom_tile() +
     scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, name = "taxon domestic coefficient", na.value = "transparent") +
-    geom_text(aes(label = signif), color = "black", size = 3) +
+    geom_text(aes(label = signif), color = "black", size = 2, hjust = 0.5, vjust = 0.5) +
     theme(legend.position = "top", legend.text = element_text(angle = 90, vjust = 0.5, size = 10),
           legend.title = element_text(size = 10),
           panel.background = element_rect(fill = "grey90"), panel.grid = element_blank(),
@@ -302,12 +302,15 @@ abundances <- phy_genus_clr@otu_table %>% t %>% data.frame %>% rownames_to_colum
 
 res_abund <- res_filt %>% filter(pMCMC_adj < 0.05) %>%
             mutate(association = case_when(coeff < 0 ~ "wild+",
-                                           coeff > 0 ~ "dom+")) %>%
-            mutate(dataset = paste("comparison with", str_remove_all(dataset, "\n.*"))) %>%
-            mutate(label = paste(association, dataset)) %>%
+                                           coeff > 0 ~ "wild-")) %>%
+            filter(dataset != "Domestic vs Wild (All)") %>%
+            mutate(dataset = paste(str_remove_all(dataset, "\n.*"))) %>%
+            mutate(label = paste(dataset, association)) %>%
             # Combine labels for different results from the same OTU
             group_by(OTU) %>%
             summarise(label = paste(label, collapse="\n")) %>%
+            # remove taxa that only vary in human wild comparison (these are only interesting in the context of dom vs wild)
+            filter(!label %in% c("Human vs Wild wild+", "Human vs Wild dom+")) %>%
             # Add abundances
             left_join(select(abundances, OTU, Abundance, Species, Common.name, Genus, Domestication), by = c("OTU"))
 
@@ -318,12 +321,13 @@ res_abund$Common.name <- factor(res_abund$Common.name, levels = species_levels$C
 p <- ggplot(res_abund, aes(x = Common.name, y = Abundance, fill = Species, colour = Species)) +
     geom_boxplot(alpha = 0.8, size = 0.5, outliers = FALSE) +
     geom_jitter(width = 0.2, size = 1, alpha = 0.8) +    scale_fill_manual(values = species_palette, name = "Species") +
+    scale_y_continuous(breaks = c(-3, 0, 3, 6, 9)) +
     scale_colour_manual(values = darken(species_palette), name = "Species") +
-    facet_wrap(~ paste(as.character(OTU), label, sep = "\n"), ncol = 5, scales = "free_y") +
-    theme(axis.text = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8),
-          axis.title.x = element_blank(),
-          strip.text.x = element_text(size = 8),
-          legend.position = "bottom") + ylab("CLR-transformed abundances") +
-    guides(fill=guide_legend(nrow=2,byrow=TRUE))
+    facet_wrap(~ paste(as.character(OTU), label, sep = "\n"), ncol = 7, scales = "free_y") +
+    theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+          axis.title.x = element_blank(), axis.text.y = element_text(angle = 0, size = 10),
+          strip.text.x = element_text(size = 10),
+          legend.position = "top") + ylab("CLR-transformed abundances") +
+    guides(fill=guide_legend(nrow=1, byrow=TRUE))
 
-ggsave(p, filename = file.path(subdir, "mcmcglmm_abundances.png"), width = 15, height = 30)
+ggsave(p, filename = file.path(subdir, "mcmcglmm_abundances.png"), width = 14, height = 20)

@@ -156,11 +156,14 @@ ggsave(file.path(subdir, "screeplot_gifts.png"), p, width=3, height=3)
 
 dom_shape_palette <- c("domestic" = 1, "wild" = 16, "feral" = 6, "human" = 8)
 
-p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0.5) +
+pp_height <- diff(range(vegan::scores(ord@ord, display="sites", choices=2)[,1]))/15
+
+p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0.5,
+              constraint_vec_style = vec_constraint(alpha = 0, linewidth = 0), constraint_lab_style = list(alpha = 0, size = 0, linewidth = 0)) +
   custom_theme() +
   scale_shape_manual(values=dom_shape_palette, name = "Domestication") +
   scale_color_manual(values=species_palette, name = "Species") +
-  geom_phylopic(data = centroids(ord@ord, phy_distillr), aes(colour = Species), uuid = centroids(ord@ord, phy_distillr)$uid, width = 0.1, fill = "transparent") +
+  geom_phylopic(data = centroids(ord@ord, phy_distillr), aes(colour = Species), uuid = centroids(ord@ord, phy_distillr)$uid, fill = "transparent",  height = pp_height) +
   theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
   guides(shape = guide_legend(ncol = 2), colour = guide_legend(ncol = 2))
   

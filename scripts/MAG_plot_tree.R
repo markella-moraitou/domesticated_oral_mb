@@ -75,80 +75,48 @@ ages_damage <- bac_meta %>% rbind(ar_meta) %>% select(label, bin, domain, Sample
 #### PLOT TREES ####
 ####################
 
+bac_meta <- bac_meta %>% mutate(phylum = case_when(is.na(phylum) ~ "Other", TRUE ~ phylum))
+
 #### Bacteria tree ####
 # Colour by order and habitat
-bac_p <- ggtree(bac_tree, layout = "circular", aes(color=phylum), size = 1.5) %<+%
+bac_p <- ggtree(bac_tree, layout="fan", open.angle=90, aes(color=phylum), size = 1) %<+%
     select(bac_meta, c(label, phylum, host_species)) +
   scale_colour_manual(values = phylum_palette, name = "MAG phylum", na.value = "black") +
   new_scale_color() +
-  geom_tiplab(size=2, aes(colour=host_species)) +
+  geom_tiplab(size=5, aes(colour=host_species)) +
   scale_colour_manual(values = species_palette, name = "Host species", na.value = "black") +
   new_scale_color() +
-  geom_tippoint(size = 2, aes(color=host_species)) +
+  geom_tippoint(size = 3, aes(color=host_species)) +
   scale_colour_manual(values = species_palette, name = "Host species", na.value = "black") +
   scale_x_continuous(expand = c(0, 0)) +  # Adjust the x-axis scaling 
-  theme(plot.margin = unit(c(-6, -6, -6, 1), "cm"), # Remove margins
-        legend.position=c(0.06, 0.5),
+  theme(plot.margin = unit(c(6, 6, 5, 5), "cm"), # Remove margins
+        legend.position=c(0.70, 0.20),
         legend.text = element_text(size=20),
         legend.title = element_text(size=20)) +
   guides(fill = guide_legend(override.aes = list(size = 5)), 
   color = guide_legend(override.aes = list(size = 5)))
 
-bac_py <- filter(select(bac_meta, c(label, bin, median_damage_model_p)), !is.na(bin))
-
-# Add info
-bac_p <- bac_p +
-  # Add boxplot with damage patterns
-  geom_fruit(data=bac_py, geom=geom_bar, mapping = aes(y=label, x = -log10(median_damage_model_p + 0.001)),
-             stat = "identity", axis.params=list(axis = "x", text.size = 6, hjust = 1, vjust = 0., nbreak = 3),
-             offset = 0.3, pwidth = 0.2, alpha = 0.3) +
-  new_scale_color() +
-  # Add point with collection year
-  geom_fruit(data=ages_damage, geom=geom_point, mapping = aes(y=label, colour = Period, shape = Period), size = 2,
-             offset = -0.2) +
-  #scale_colour_viridis_c(option = "magma", name = "Collection year", na.value = "transparent") +
-  #scale_shape(name = "", labels = c("Yes" = "Approximated", "No" = "From records")) +
-  new_scale_colour() +
-  guides(colour = guide_legend(override.aes = list(size = 2.5)))
-
-ggsave(bac_p, file=file.path(subdir, "bac_genome_tree.png"), width = 12, height = 10)
+ggsave(bac_p, file=file.path(subdir, "bac_genome_tree.png"), width = 15, height = 15)
 
 #### Archaea tree ####
 # Colour by order and habitat
 ar_p <- ggtree(ar_tree) %<+%
     select(ar_meta, c(label, host_species)) +
   new_scale_color() +
-  geom_tiplab(size=2, aes(colour=host_species)) +
+  geom_tiplab(size=3, aes(colour=host_species)) +
   scale_colour_manual(values = species_palette, name = "Host species", na.value = "black") +
   new_scale_color() +
   geom_tippoint(size = 2, aes(color=host_species)) +
   scale_colour_manual(values = species_palette, name = "Host species", na.value = "black") +
-  scale_x_continuous(expand = c(0.04, 0.04)) +  # Adjust the x-axis scaling 
-  theme(plot.margin = unit(c(0, 0, 0, 3), "cm"),
-        legend.position=c(-0.01, 0.5),
+  scale_x_continuous(expand = c(0.4, 0.4)) +  # Adjust the x-axis scaling 
+  theme(plot.margin = unit(c(0, 3, 0, 0), "cm"),
+        legend.position=c(0.2, 0.8),
         legend.text = element_text(size=10),
         legend.title = element_text(size=10)) +
   guides(fill = guide_legend(override.aes = list(size = 2.5)), 
          color = guide_legend(override.aes = list(size = 2.5))) 
 
-ar_py <- filter(select(ar_meta, c(label, bin, median_damage_model_p)), !is.na(bin))
-
-# Add info
-ar_p <- ar_p +
-  # Add boxplot with damage patterns
-  geom_fruit(data=ar_py, geom=geom_bar, mapping = aes(y=label, x = -log10(median_damage_model_p + 0.001)),
-             stat = "identity", axis.params=list(axis = "x", text.size = 6, hjust = 1, vjust = 0., nbreak = 3),
-             offset = 0.39, pwidth = 0.2, alpha = 0.3) +
-  new_scale_color() +
-  # Add point with collection year
-  geom_fruit(data=ages_damage, geom=geom_point, mapping = aes(y=label, colour = Period, shape = Period), size = 2,
-             offset = -0.19) +
-  #scale_colour_viridis_c(option = "magma", name = "Collection year", na.value = "transparent") +
-  #scale_shape(name = "", labels = c("Yes" = "Approximated", "No" = "From records")) +
-  new_scale_colour() +
-  theme(legend.position = "none")
-
-ggsave(ar_p, file=file.path(subdir, "ar_genome_tree.png"), width = 6, height = 4)
+ggsave(ar_p, file=file.path(subdir, "ar_genome_tree.png"), width = 7, height = 3)
 
 ###########################
 #### PLOT AGE V DAMAGE ####

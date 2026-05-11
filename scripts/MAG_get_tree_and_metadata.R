@@ -131,9 +131,6 @@ subset_tree <- function(tree, metadata) {
     # Rename labels
     pruned_tree$tip.label <- meta$label[match(pruned_tree$tip.label, str_remove(meta$bin, ".gz"))]
     #pruned_tree <- unroot(pruned_tree)
-    # When the node label is missing, use the node number
-    node_labs <- paste0("N", (Ntip(pruned_tree)+1):(Ntip(pruned_tree) + Nnode(pruned_tree)))
-    pruned_tree$node.label <- ifelse(pruned_tree$node.label=="", node_labs, pruned_tree$node.label)
     return(pruned_tree)
 }
 
@@ -142,6 +139,33 @@ bac_tree_new <- subset_tree(bac_tree, bac_meta)
 
 # Archaea tree
 ar_tree_new <- subset_tree(ar_tree, ar_meta)
+
+#### Give nodes more informative names ####
+
+get_node_labels <- function(tree, metadata) {
+    node_labels <- data.frame(node=integer(), old_label = character(), new_label=character())
+    for (i in 1:tree$Nnode + Ntip(tree)) {
+        # Keep old labels when present
+        old_label <- tree$node.label[i-Ntip(tree)]
+        if (old_label != "") {
+          new_label <- old_label
+        } else {
+          # Get the descendants of this node
+          desc <- tree$tip.label[getDescendants(tree, i)]
+          new_label <- metadata %>% filter(label %in% desc) %>%
+                      select(species:domain) %>% select_if(~ !all(is.na(.))) %>%
+                      pivot_longer(cols=everything(), names_to="rank", values_to="taxon") %>% group_by(rank) %>%
+                      mutate(unique_values = n_distinct(taxon)) %>% filter(unique_values == 1) %>% pull(taxon) %>% head(1)
+        }
+        node_labels <- rbind(node_labels, data.frame(node=i, old_label=old_label, new_label=new_label))
+    }
+    node_labels$new_label <- make.unique(node_labels$new_label) %>% str_replace_all(" ", "_") %>% str_remove_all("'")
+    tree$node.label <- node_labels$new_label[match(1:tree$Nnode + Ntip(tree), node_labels$node)]
+    return(tree)
+}
+
+bac_tree_new <- get_node_labels(bac_tree_new, bac_meta)
+ar_tree_new <- get_node_labels(ar_tree_new, ar_meta)
 
 # Add some traits should be added to the entire clade that shares a common ancestor, not just the tips
 add_node_metadata <- function(tree, metadata, traits) {
@@ -152,13 +176,16 @@ add_node_metadata <- function(tree, metadata, traits) {
     # Add metadata to nodes that share a common ancestor
     for (tr in traits) {
         node_traits <- data.frame(node=integer(), val=character())
-        for (val in unique(tree_tibble[!is.na(tree_tibble[[tr]]), ][[tr]])) {
+        for (val in sort(unique(tree_tibble[!is.na(tree_tibble[[tr]]), ][[tr]]))) {
+            print(val)
             # Get all tips with this value
             tips <- tree_tibble$label[!is.na(tree_tibble[[tr]]) & tree_tibble[[tr]] == val]
             # Get the node of the most recent common ancestor
             node <- ifelse(length(tips) > 1, getMRCA(tree, tips), tree_tibble$node[tree_tibble$label == tips])
+            print(tree_tibble[which(tree_tibble$node == node),c("node", "label")])
             # Get the descendants of this node
             desc <- getDescendants(tree, node)
+            #tree_tibble %>% filter(node %in% desc)
             node_traits <- rbind(node_traits, data.frame(node=desc, val=rep(val, length(desc))))
         }
         # Add to tree tibble
@@ -167,6 +194,10 @@ add_node_metadata <- function(tree, metadata, traits) {
     metadata_with_nodes <- tree_tibble %>% select(-parent, -node, -branch.length)
     return(metadata_with_nodes)
 }
+
+# Fixing an issue with Desulfomicrobium, which clusters closer to Pseudomonadota and prevents properly assigning the phylum to both clades
+
+bac_meta$phylum[bac_meta$label == "g__Desulfomicrobium_1"] <- "Desulfobacterota_B"
 
 bac_meta_new <- add_node_metadata(bac_tree_new, bac_meta, c("phylum", "class", "order", "family", "genus")) %>%
     # remove _[A-Z] suffix from phylum to species

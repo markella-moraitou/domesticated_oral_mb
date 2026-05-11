@@ -11,7 +11,6 @@ library(tibble)
 library(phyloseq)
 library(stringr)
 library(vegan)
-library(rphylopic)
 library(ape)
 library(picante)
 library(parallel)
@@ -43,8 +42,6 @@ source(file.path("modules", "phylo_functions.R"))
 for (phy_file in list.files(phydir, pattern = "*.RDS")) {
   assign(gsub(".RDS", "", phy_file), readRDS(file.path(phydir, phy_file)))
 }
-
-phylopics <- read.csv(file.path(indir, "palettes", "phylopics.csv"), stringsAsFactors = FALSE)
 
 # Bacterial phylogeny (GTDB)
 bac_tree <- read.tree(file.path(phydir, "phy_tree.tree"))
@@ -95,22 +92,9 @@ rare_results_filt <- rare_results %>% left_join(metadata, by = "Sample") %>%
 
 write.csv(rare_results_filt, file.path(subdir, "rarefaction_results_filt.csv"), row.names = FALSE)
 
-species_medians <-
-  # Get the average species richness at max subsample
-  rare_results_filt %>%
-  group_by(Species, Species_short) %>%
-  filter(subsample == max(rare_results_filt$subsample)) %>%
-  summarise(median_S = mean(S)) %>%
-  # add phylopic info
-  left_join(phylopics)
-
 # Plot rarefaction curves
 p <- ggplot(rare_results_filt) +
   geom_line(aes(x = subsample, y = S, group = Sample, colour = Species)) +
-  geom_phylopic(data = species_medians,
-                 aes(x = max-step*3, y = median_S + 5, uuid = uid,
-                     height = max(rare_results_filt$S)*1.5, color = Species),
-                 alpha = 0.8, vjust = 0, hjust = 0, remove_background = FALSE) +
   scale_color_manual(values=species_palette, name = "Species") +
   facet_grid(~ Species_short) +
   theme(legend.position = "none") +
@@ -159,22 +143,9 @@ rare_results_filt <- rare_results %>% left_join(metadata, by = "Sample") %>%
 
 write.csv(rare_results_filt, file.path(subdir, "rarefaction_results_raw.csv"), row.names = FALSE)
 
-species_medians <-
-  # Get the average species richness at max subsample
-  rare_results_filt %>%
-  group_by(Species, Species_short) %>%
-  filter(subsample == max(rare_results_filt$subsample)) %>%
-  summarise(median_S = mean(S)) %>%
-  # add phylopic info
-  left_join(phylopics)
-
 # Plot rarefaction curves
 p <- ggplot(rare_results_filt) +
   geom_line(aes(x = subsample, y = S, group = Sample, colour = Species)) +
-  geom_phylopic(data = species_medians,
-                 aes(x = max-step*2, y = median_S + 5, uuid = uid,
-                     width = max(rare_results_filt$S), color = Species),
-                 alpha = 0.8, vjust = 0, hjust = 0) +
   scale_color_manual(values=species_palette, name = "Species") +
   facet_grid(~ Species_short) +
   theme(legend.position = "none") +

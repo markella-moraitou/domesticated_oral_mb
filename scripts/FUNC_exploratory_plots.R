@@ -154,17 +154,9 @@ ggsave(file.path(subdir, "screeplot_genes.png"), p, width=3, height=3)
 
 dom_shape_palette <- c("domestic" = 1, "wild" = 16, "feral" = 6, "human" = 8)
 
-p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0.5) +
-  custom_theme() +
-  scale_shape_manual(values=dom_shape_palette, name = "Domestication") +
-  scale_color_manual(values=species_palette, name = "Species") +
-  geom_phylopic(data = centroids(ord@ord, phy_gene_f), aes(colour = Species), uuid = centroids(ord@ord, phy_gene_f)$uid, width = 0.3, fill = "transparent") +
-  theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
-  guides(shape = guide_legend(ncol = 2), colour = guide_legend(ncol = 2))
-  
-p <- ggMarginal(p, type="violin", groupColour = TRUE, groupFill = TRUE, size=5)
+p <- custom_ord_plot(phy_gene_f, ord, colour="Species", shape="Domestication", type = "RDA")
 
-ggsave(p, filename = file.path(subdir, "gene_ordination.png"), width=6, height=6)
+ggsave(p, filename = file.path(subdir, "gene_ordination.png"), width=10, height=6)
 
 # Plot arrows
 # Get loading arrows coordinaties
@@ -201,7 +193,7 @@ p <- ggplot(data = arrows_filt) +
   theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
   guides(colour = guide_legend(nrow = 2))
 
-ggsave(p, filename = file.path(subdir, "gene_ordination_arrows.png"), width=6, height=6)
+ggsave(p, filename = file.path(subdir, "gene_ordination_arrows.png"), width=10, height=6)
 
 #### PATH ABUNDANCE (CLR) ####
 
@@ -228,15 +220,7 @@ p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
 ggsave(file.path(subdir, "screeplot_pathways.png"), p, width=3, height=3)
 
 # Color by order
-p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0.5) +
-  custom_theme() +
-  scale_shape_manual(values=dom_shape_palette, name = "Domestication") +
-  scale_color_manual(values=species_palette, name = "Species") +
-  geom_phylopic(data = centroids(ord@ord, phy_pathway_clr), aes(colour = Species), uuid = centroids(ord@ord, phy_pathway_clr)$uid, width = 0.2, fill = "transparent") +
-  theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
-  guides(shape = guide_legend(ncol = 2), colour = guide_legend(ncol = 2))
-
-p <- ggMarginal(p, type="violin", groupColour = TRUE, groupFill = TRUE, size=5)
+p <- custom_ord_plot(phy_pathway_clr, ord, colour="Species", shape="Domestication", type = "RDA")
 
 ggsave(p, filename = file.path(subdir, "pathway_ordination.png"), width=6, height=6)
 
