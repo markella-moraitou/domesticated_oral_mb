@@ -47,7 +47,8 @@ phy_gene_f <- readRDS(file.path(datadir, "phy_gene_f.RDS"))
 
 # Select sample metadata
 meta <- data.frame(phy_gene_f@sam_data) %>% rownames_to_column("Sample") %>%
-        select(Sample, Sample.ID, Species, Genus, Common.name, Group, Domestication, Total_abundance, contig_reads_count)
+        select(Sample, Sample.ID, Species, Genus, Common.name, Group, Domestication, Total_abundance, contig_reads_count) %>%
+        mutate(Group = factor(str_to_lower(Group), levels = c(str_to_lower(levels(Group)))))
 
 #  Abp finding from HMMER and relevant contig mapping stats
 abpA_contigs <- read.table(file.path(abpdir, "abpA_mapping_stats.txt"), header = TRUE, sep = "\t")
@@ -59,9 +60,10 @@ abpA_hmmer_file <- readLines(file.path(abpdir, "abpA_hmmer_table.txt"))
 abpA_hmmer_filtered <- abpA_hmmer_file[!grepl("#", abpA_hmmer_file)]
 abpA_hmmer_filtered <- gsub("\\s\\s+", "\t", abpA_hmmer_filtered)
 abpA_hmmer <- read.table(text = abpA_hmmer_filtered, header = FALSE, sep = "\t", quote = "", comment = "")
+abpA_hmmer <- abpA_hmmer[,c(1, 5, 6, 7, 18)]
 
-colnames <- gsub("# ", "", abpA_hmmer_file[2]) %>% gsub("\\s\\s+", "\t", .) %>% str_split_1("\t") %>% make.names(unique = TRUE)
-colnames(abpA_hmmer) <- colnames[1:ncol(abpA_hmmer)]
+colnames <- gsub("# ", "", abpA_hmmer_file[2]) %>% gsub("\\s\\s+", "\t", .) %>% str_split_1("\t")
+colnames(abpA_hmmer) <- c("target.name", "E.value", "score", "bias", "description")
 
 #################################
 #### AMYLASE GENE ABUNDANCES ####
@@ -87,7 +89,8 @@ amy_abundances <- gene_str %>%
   left_join(meta, by = c("Sample" = "Sample.ID")) %>%
   filter(!is.na(Total_abundance)) %>%
   # Calculate relative abundance
-  mutate(rel_abundance = mapped_reads / Total_abundance)
+  mutate(rel_abundance = mapped_reads / Total_abundance) %>%
+  mutate(genus = str_remove(genus, "\\*$"))
 
 write.table(amy_abundances,
           file = file.path(subdir, "amylase_gene_abundance_stratified.tsv"),
@@ -95,7 +98,7 @@ write.table(amy_abundances,
 
 # Get median abundances per amylase gene
 amy_median_abund <- amy_abundances %>%
-  group_by(gene_name) %>%
+  group_by(gene_name, amylase_type, database) %>%
   summarize(median_abundance = median(rel_abundance)) %>%
   ungroup() %>%
   arrange(desc(median_abundance)) %>% unique
@@ -119,8 +122,8 @@ top_genera <- amy_summ %>%
   slice_head(n = 8) %>%
   pull(genus)
 
-amy_summ <- amy_summ %>%
-  mutate(genus = ifelse(genus %in% top_genera | genus == "no support", genus, "other"))
+amy_abundances <- amy_abundances %>%
+  mutate(genus_grouped = ifelse(genus %in% top_genera | genus == "no support", genus, "other"))
 
 genus_palette <- brewer.pal(n = length(top_genera), name = "Set1")
 names(genus_palette) <- top_genera
@@ -128,8 +131,14 @@ names(genus_palette) <- top_genera
 genus_palette["no support"] <- "black"
 genus_palette["other"] <- "grey50"
 
-amy_summ$genus <- factor(amy_summ$genus,
-                                    levels = c(top_genera, "other", "no support"))
+amy_abundances$genus_grouped <- factor(amy_abundances$genus_grouped,
+                                        levels = c(top_genera, "other", "no support"))
+
+# Get mean abundance per host group
+amy_summ %>% 
+  # Sum by sample
+  group_by(Sample, Group) %>% summarise(sum = sum(rel_abundance*100)) %>%
+  group_by(Group) %>% summarise(mean_ra = mean(sum))
 
 #### Plot ####
 
@@ -146,10 +155,10 @@ p_t <- ggplot(amy_abundances, aes(y = Sample, x = rel_abundance, fill =  forcats
         axis.text.x = element_text(vjust = 0.5),
         strip.text.y = element_blank(),
         legend.position = "bottom", legend.title.position = "top") +
-    guides(fill = guide_legend(ncol = 1, byrow = FALSE))
+    guides(fill = guide_legend(ncol = 1, byrow = TRUE))
 
 # By microbial genus
-p_g <- ggplot(amy_abundances, aes(y = Sample, x = rel_abundance, fill = genus)) +
+p_g <- ggplot(amy_abundances, aes(y = Sample, x = rel_abundance, fill = genus_grouped)) +
   geom_bar(stat = "identity", position = "stack") +
   scale_x_continuous(labels = scales::percent_format(accuracy = 0.01), expand=c(0,0), limits = c(0, 0.006)) +
   scale_fill_manual(values = genus_palette) +
@@ -161,7 +170,7 @@ p_g <- ggplot(amy_abundances, aes(y = Sample, x = rel_abundance, fill = genus)) 
         axis.text.x = element_text(vjust = 0.5),
         strip.text.y = element_text(angle = 0),
         legend.position = "bottom", legend.title.position = "top") +
-    guides(fill = guide_legend(ncol = 2, byrow = FALSE))
+    guides(fill = guide_legend(ncol = 2, byrow = TRUE))
 
 p <- plot_grid(p_t, p_g, align = "h", axis = "tb", ncol = 2, rel_widths = c(1, 1.2))
 
@@ -195,10 +204,17 @@ diagnose_lm <- function(model) {
 
 # Sum abundances of all genes
 amy_abundances_total <- amy_abundances %>% group_by(Sample, Genus, Domestication, contig_reads_count) %>%
-        summarise(rel_abundance = sum(rel_abundance))
+        summarise(rel_abundance = sum(rel_abundance)*100) # Get as percentage
+
+# Encode diet as herbivore or omnivore
+amy_abundances_total <- amy_abundances_total %>%
+      # Remove humans
+      filter(Genus != "Homo") %>%
+      mutate(Diet = case_when(Genus == "Sus" ~ "omnivore",
+                              Genus %in% c("Equus", "Ovis") ~ "herbivore"))
 
 # Linear model
-model <- aov(rel_abundance ~ Genus*Domestication + contig_reads_count, data = amy_abundances_total)
+model <- aov(rel_abundance ~ Diet*Domestication + contig_reads_count, data = amy_abundances_total)
 res <- summary(model)[[1]]
 
 shapiro.test(residuals(model))
@@ -225,55 +241,92 @@ write.csv(tukey, file = file.path(subdir, "tukey_amylase_relabund.csv"), quote =
 # Fix tax table 
 abpA_tax <- abpA_tax %>% mutate(across(superkingdom:species, ~ str_remove(str_remove(.x, "^.__"), ": .*")))
 
-abpA_table <- abpA_hmmer %>% select(target.name, E.value) %>%
+abpA_table <- abpA_hmmer %>% select(target.name, E.value, description) %>%
   # Get contig name
   mutate(contigName = str_remove(str_remove(target.name, "clustered_contigs_rep_seq_"), "_[0-9]+$")) %>%
   # Combine with mapping stats
-  left_join(abpA_contigs) %>%
+  left_join(abpA_contigs) %>% filter(!is.na(coverage)) %>%
   # Filter for identity and coverage as we do for the general gene table
-  mutate(mapped_reads = case_when(identity > 98 & coverage > 0.5 ~ mapped_reads,
+  mutate(mapped_reads = case_when(identity > 98 & coverage > 50 ~ mapped_reads,
                                   TRUE ~ 0)) %>%
   # Add taxonomy of contig
   left_join(select(abpA_tax, c(X..contig, phylum, class, order, family, genus, species)), by = c("contigName" = "X..contig")) %>%
+  # When classification are missing, use 'no support'
+  mutate(across(phylum:species, ~ replace_na(.x, "no support"))) %>%
   # Combine with sample metadata
-  rename(Sample.ID = sample) %>% 
-  full_join(meta) %>% mutate(mapped_reads = case_when(is.na(mapped_reads) ~ 0, TRUE ~ mapped_reads)) %>%
-  filter(!is.na(Total_abundance)) %>%
+  rename(Sample.ID = sample) %>%
+  full_join(meta) %>% 
+  # Remove missing species (these are controls)
+  filter(!is.na(Species)) %>% 
+  mutate(mapped_reads = case_when(is.na(mapped_reads) ~ 0, TRUE ~ mapped_reads)) %>%
   # Calculate rel abundance
-  mutate(rel_abundance = mapped_reads/Total_abundance)
+  mutate(rel_abundance = mapped_reads/Total_abundance) %>%
+  # Simplify description
+  mutate(description = case_when(grepl("rank: E", description) ~ "no annotation",
+                                 TRUE ~ str_remove(str_remove(description, ".*rank: .; "), " \\(db=.*\\)")))
 
 write.csv(abpA_table, file.path(subdir, "abpA_stats.csv"), quote = FALSE, row.names = FALSE)
 
+# First plot relatively loose hits: E.value < 0.05
+abpA_table_loose <- 
+    abpA_table %>%
+    mutate(rel_abundance = case_when(E.value < 0.05 ~ rel_abundance, TRUE ~ 0))
+
+# Get top genera for plotting
+top_genera2 <- abpA_table_loose %>% group_by(genus) %>% summarise(rel_abundance = sum(rel_abundance)) %>%
+        arrange(desc(rel_abundance)) %>% filter(genus != "no support" & rel_abundance > 0) %>% head(3) %>% pull(genus)
+
+# Match with previous plots
+genus_palette2 <- genus_palette[top_genera2]
+genus_palette2 <- genus_palette2[!is.na(genus_palette2)]
+
+# Add remaining genera
+missing_gen <- top_genera2[!top_genera2 %in% names(genus_palette2) & !top_genera2 %in% c("no support", "other")]
+missing_col <- brewer.pal(n = length(missing_gen), name = "Set2")
+
+genus_palette2 <- c(genus_palette2, setNames(missing_col, missing_gen))
+
+genus_palette2["no support"] <- "black"
+genus_palette2["other"] <- "grey50"
+
+abpA_table_loose <- 
+    abpA_table_loose %>%
+    mutate(genus_grouped = case_when(genus %in% c(top_genera2, "no support") ~ genus, TRUE ~ "other")) %>%
+    mutate(genus_grouped = factor(genus_grouped, levels = names(genus_palette2)))
+
 # Plot
-p <- ggplot(abpA_table, aes(y = Sample.ID, x = rel_abundance, fill = genus)) +
+p1 <- ggplot(abpA_table_loose, aes(y = Sample.ID, x = rel_abundance, fill = genus_grouped)) +
   geom_bar(stat = "identity", position = "stack") +
-  scale_x_continuous(labels = scales::percent_format(accuracy = 0.01)) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 0.001)) +
   labs(y = "Sample",
-       x = "Relative abundance of abpA gene",
+       x = "Rel. abundance of loose abpA matches\n(E-value < 0.05)",
        fill = "Microbial genus") +
+  scale_fill_manual(values = genus_palette2) +
   facet_grid(Group ~ ., scales = "free_y", space = "free_y") +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
         strip.text.y = element_text(angle = 0),
         legend.position = "bottom", legend.title.position = "top") +
-    guides(fill = guide_legend(ncol = 2, byrow = FALSE))
+    guides(fill = guide_legend(ncol = 1, byrow = FALSE))
 
-ggsave(filename = file.path(subdir, "abpA_abundance_nofilt.png"), width = 5, height = 9)
+ggsave(filename = file.path(subdir, "abpA_abundance_loose.png"), width = 5, height = 9)
 
-abpA_table_filt <- abpA_table %>%
+# Stricter hits
+abpA_table_filt <- abpA_table_loose %>%
   # Keep only hits with E-value < 10^-3
-  filter(E.value < 10^-3)
+  mutate(rel_abundance = case_when(E.value < 10^-3 ~ rel_abundance, TRUE ~ 0))
 
 # Plot
-p <- ggplot(abpA_table_filt, aes(y = Sample.ID, x = rel_abundance, fill = genus)) +
+p <- ggplot(abpA_table_filt, aes(y = Sample.ID, x = rel_abundance, fill = genus_grouped)) +
   geom_bar(stat = "identity", position = "stack") +
-  scale_x_continuous(labels = scales::percent_format(accuracy = 0.01)) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 0.001)) +
   labs(y = "Sample",
-       x = "Relative abundance of abpA gene",
+       x = "Rel. abundance of strict abpA matches\n(E-value < 10^-3)",
        fill = "Microbial genus") +
+  scale_fill_manual(values = genus_palette2) +
   facet_grid(Group ~ ., scales = "free_y", space = "free_y") +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
         strip.text.y = element_text(angle = 0),
         legend.position = "bottom", legend.title.position = "top") +
-    guides(fill = guide_legend(ncol = 2, byrow = FALSE))
+    guides(fill = guide_legend(ncol = 1, byrow = FALSE))
 
 ggsave(filename = file.path(subdir, "abpA_abundance_strict.png"), width = 5, height = 9)

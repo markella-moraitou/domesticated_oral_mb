@@ -44,9 +44,9 @@ drep_bins <- read.table(file.path(outdir, "M4_dereplicated_bins", "dereplicated_
 drep_bins <- gsub("dereplicated_genomes/", "", drep_bins)
 
 ## Keep only HQ MAGs
-hq_bacs <- bac_meta %>% filter(Completeness >= 90 & Contamination <= 5) %>% filter(bin %in% drep_bins) %>% pull(label) 
+hq_bacs <- bac_meta %>% filter(Completeness >= 75 & Contamination <= 5) %>% filter(bin %in% drep_bins) %>% pull(label) 
 
-hq_ars <- ar_meta %>% filter(Completeness >= 90 & Contamination <= 5) %>% filter(bin %in% drep_bins) %>% pull(label)
+hq_ars <- ar_meta %>% filter(Completeness >= 75 & Contamination <= 5) %>% filter(bin %in% drep_bins) %>% pull(label)
 
 ## Subset trees to only include HQ MAGs
 bac_tree <- drop.tip(bac_tree, setdiff(bac_tree$tip.label, hq_bacs))

@@ -72,6 +72,6 @@ done
 # Also get taxonomy of these contigs
 
 head -1 ${contigtax}/all.contig2classification_named.txt > abpA_tax.txt
-grep -f abpA_contigs.tmp ${contigtax}/all.contig2classification_named.txt | grep -v "no taxid assigned" >> abpA_tax.txt
+grep -w -f abpA_contigs.tmp ${contigtax}/all.contig2classification_named.txt | grep -v "no taxid assigned" >> abpA_tax.txt
 
 rm abpA_contigs.tmp
