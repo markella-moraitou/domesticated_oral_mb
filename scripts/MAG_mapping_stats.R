@@ -53,7 +53,7 @@ map_stats <- read.table(file.path(outdir, "M4_dereplicated_bins", "mapping", "ma
 # Combine bin metadata and keep only dereplicated bins
 bin_meta <- rbind(bac_meta %>% mutate(domain="Bacteria"), ar_meta %>% mutate(domain="Archaea")) %>%
   filter(bin %in% drep_bins) %>%
-  filter(Completeness >= 90 & Contamination <= 5)
+  filter(Completeness > 75 & Contamination < 5)
 
 write.csv(bin_meta, file = file.path(subdir, "hq_mag_metadata.csv"), row.names = FALSE)
 
@@ -152,9 +152,9 @@ p <- ggplot(data = map_stats_per_host_filt, aes(x = host_species, y = label)) +
     scale_colour_viridis_b(name = "Mean coverage", option = "plasma") +
     theme(legend.position = "top", legend.direction = "vertical",
          axis.text.y = element_text(size = 6), axis.text.x = element_text(hjust = 1)) +
-    xlab("Host species") + ylab("MAG (high-quality: >90% completeness, <5% contamination)")
+    xlab("Host species") + ylab("MAG (>75% completeness, <5% contamination)")
 
-ggsave(file.path(subdir, "hq_mag_cov_and_id_mean.png"), plot = p, width = 6, height = 12)
+ggsave(file.path(subdir, "hq_mag_cov_and_id_mean.png"), plot = p, width = 6, height = 14)
 
 # Plot median stats
 map_stats_per_host_filt <-
@@ -167,9 +167,9 @@ p <- ggplot(data = map_stats_per_host_filt, aes(x = host_species, y = label)) +
     scale_colour_viridis_b(name = "Median coverage", option = "plasma") +
     theme(legend.position = "top", legend.direction = "vertical",
          axis.text.y = element_text(size = 6), axis.text.x = element_text(hjust = 1)) +
-    xlab("Host species") + ylab("MAG (high-quality: >90% completeness, <5% contamination)")
+    xlab("Host species") + ylab("MAG (>75% completeness, <5% contamination)")
 
-ggsave(file.path(subdir, "hq_mag_cov_and_id_median.png"), plot = p, width = 6, height = 12)
+ggsave(file.path(subdir, "hq_mag_cov_and_id_median.png"), plot = p, width = 6, height = 14)
 
 # Plot max stats
 map_stats_per_host_filt <-
@@ -182,9 +182,9 @@ p <- ggplot(data = map_stats_per_host_filt, aes(x = host_species, y = label)) +
     scale_colour_viridis_b(name = "Max coverage", option = "plasma") +
     theme(legend.position = "top", legend.direction = "vertical",
          axis.text.y = element_text(size = 6), axis.text.x = element_text(hjust = 1)) +
-    xlab("Host species") + ylab("MAG (high-quality: >90% completeness, <5% contamination)")
+    xlab("Host species") + ylab("MAG (>75% completeness, <5% contamination)")
 
-ggsave(file.path(subdir, "hq_mag_cov_and_id_max.png"), plot = p, width = 6, height = 12)
+ggsave(file.path(subdir, "hq_mag_cov_and_id_max.png"), plot = p, width = 6, height = 14)
 
 #### Define presence-absence of MAGs per host species ####
 
@@ -214,7 +214,7 @@ p <- ggplot(data = mag_pres_per_sp, aes(x = host_species, y = label)) +
     scale_colour_viridis_b(name = "Max coverage", option = "plasma") +
     theme(legend.position = "top", legend.direction = "vertical",
          axis.text.y = element_text(size = 6), axis.text.x = element_text(hjust = 1)) +
-    xlab("Host species") + ylab("MAG (high-quality: >90% completeness, <5% contamination)")
+    xlab("Host species") + ylab("MAG (>75% completeness, <5% contamination)")
 
-ggsave(file.path(subdir, "hq_mag_pres_abs.png"), plot = p, width = 6, height = 12)
+ggsave(file.path(subdir, "hq_mag_pres_abs.png"), plot = p, width = 6, height = 14)
 

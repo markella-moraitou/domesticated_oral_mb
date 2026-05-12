@@ -158,7 +158,7 @@ splits_summary <- splits_df_filt %>%
 #######################
 
 # Function to permute host labels and re-calculate split types
-permute_splits <- function(bac_tree, ar_tree, data, n_permutations=1000) {
+permute_splits <- function(bac_tree, ar_tree, data, n_permutations=100) {
     permuted_results <- data.frame()
     host_perm_map <- data.frame(original = unique(data$host))
     for (i in 1:n_permutations) {
