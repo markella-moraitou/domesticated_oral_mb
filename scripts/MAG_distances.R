@@ -11,6 +11,7 @@ library(ggplot2)
 library(tidyr)
 library(stringr)
 library(phytools)
+library(svglite)
 
 #### VARIABLES AND WORKING DIRECTORY ####
 
@@ -188,6 +189,9 @@ phy_dist_filt <- phy_dist %>%
                  filter((domestication_1 == "domestic" & domestication_2 != "domestic") |
                         (domestication_2 == "domestic" & domestication_1 != "domestic"))
 
+# Add taxonomic genus information
+mag_genus <- rbind(bac_meta, ar_meta) %>% select(label, genus) %>% unique()
+
 ##########################################################
 #### CALCULATE DISTANCES TO NEAREST WILD OR HUMAN MAG ####
 ##########################################################
@@ -200,23 +204,45 @@ get_distances <- function(mag, species, distance_table) {
     # Filter distances for the given MAG
     dist_filt <- distance_table %>%
         # Keep only distances involving the given MAG and host species (all domestic should be in columns MAG1 and host_species_1)
-        filter((MAG1 == mag & host_species_1 == species)) %>%
+        # and either the wild counterpart or humans
+        filter((MAG1 == mag & host_species_1 == species & host_species_2 %in% c(dom_wild[[species]], "Homo sapiens"))) %>%
         # Are we comparing with humans or wild counterparts?
         mutate(comparing_with = domestication_2) %>%
         # Was the MAG idenitified via assembly or mapping?
         mutate(presence = case_when(method_1 == "mapped" | method_2 == "mapped" ~ "mapped",
                                     TRUE ~ "assembled"))
+
+    dist_filt$genus_1 <- mag_genus$genus[match(dist_filt$MAG1, mag_genus$label)]
+    dist_filt$genus_2 <- mag_genus$genus[match(dist_filt$MAG2, mag_genus$label)]
+    
+    dist_filt <- dist_filt %>% mutate(same_genus = ifelse(genus_1 == genus_2, TRUE, FALSE)) %>% select(-genus_1, -genus_2)
+    
+    # If there is no related MAG from human or the wild counterpart, exit
+    if (! "human" %in% dist_filt$comparing_with | ! "wild" %in% dist_filt$comparing_with) {
+        warning(paste0("Not enough MAGs for analysis of ", mag))
+        return()
+    }
     
     # Get the smallest distance for each comparison
     dist_min <- dist_filt %>%
         group_by(comparing_with) %>%
-        slice_min(Distance) %>%
-        select(comparing_with, Distance, presence) %>%
+        slice_min(Distance) %>% unique() %>% 
+        select(comparing_with, MAG2, Distance, presence, same_genus) %>%
+        # At least one of the comparisons should be from the same genus, otherwise exit
+        ungroup %>%
+        filter(any(same_genus))
+    
+    if (nrow(dist_min) < 2) {
+        warning(paste0("MAGs too distant for analysis of ", mag))
+        return()
+    }
+    dist_min <- dist_min %>% select(-same_genus) %>%
+        rename(MAG = MAG2) %>%
+        pivot_wider(names_from = comparing_with, values_from = c(Distance, presence, MAG)) %>%
         # Add relevant data
         mutate(domesticate_MAG = mag,
-               domesticate_host = species) %>% unique() %>%
-        ungroup() %>% mutate(presence = case_when(any(presence == "mapped") ~ "mapped",
-                                        TRUE ~ "assembled"))
+               domesticate_host = species) %>%
+        mutate(diff_wild_human = Distance_wild - Distance_human)
     return(dist_min)    
 }
 
@@ -243,26 +269,29 @@ dw_dh_distances <- unique(dw_dh_distances)
 
 write.csv(dw_dh_distances, file = file.path(subdir, "domestic_mag_dw_dh_distances.csv"), row.names = FALSE)
 
-# Make wider
-dw_dh_wide <- dw_dh_distances %>%
-    pivot_wider(names_from = comparing_with, values_from = Distance, id_cols = c(domesticate_MAG, domesticate_host, presence))
+# Prepare for plotting
+dw_dh_distances <- dw_dh_distances %>% mutate(presence = case_when(presence_human == "assembled" & presence_wild == "assembled" ~ "both via assembly",
+                                              (presence_human == "assembled" & presence_wild == "mapped") | (presence_human == "mapped" & presence_wild == "assembled") ~ "one assembled, one mapped",
+                                              presence_human == "mapped" & presence_wild == "mapped" ~ "both via mapping")) %>%
+    select(-presence_human, -presence_wild)
 
-# Plot
-p <- ggplot(data = dw_dh_wide, aes(x = wild, y = human, colour = domesticate_host, shape = presence)) +
+# Plot 
+p <- ggplot(data = dw_dh_distances, aes(x = Distance_wild, y = Distance_human, colour = domesticate_host, shape = presence)) +
      geom_jitter(alpha = 0.5, size = 2, height = 0.01, width = 0.01) +
      scale_colour_manual(values = species_palette, name = "Domesticate host") +
-     scale_shape_manual(values = c("mapped" = 4, "assembled" = 16), name = "MAG presence via",
-                        labels = c("assembly", "mapping")) +
+     scale_shape_manual(values = c("both via assembly" = 15, "both via mapping" = 3, "one assembled, one mapped" = 12), name = "MAG presence identified:") +
      facet_grid(domesticate_host ~ .) +
      labs(x = "Distance to nearest wild counterpart MAG",
           y = "Distance to nearest human MAG") +
      geom_abline(slope = 1, intercept = 0, linetype = "dotted", color = "black") +
-     theme(legend.direction = "vertical", legend.position = "right")
+     theme(legend.direction = "vertical", legend.position = "bottom")
 
-# Label mags that are closer to human MAGs
-p <- p + geom_text(data = subset(dw_dh_wide, human < wild),
+# Label mags more related to human MAGs
+p <- p + geom_text(data = subset(dw_dh_distances, Distance_human < Distance_wild),
                    aes(label = domesticate_MAG),
-                   vjust = 1, hjust = 0.5, size = 1.7, color = "black") +
-    xlim(c(0,1.8))
+                   vjust = 1, hjust = 0, size = 3, color = "black") +
+    xlim(-0.01, max(dw_dh_distances$Distance_wild, na.rm = TRUE)*1.5)
 
-ggsave(p, filename = file.path(subdir, "dw_dh_distances.png"), width = 6, height = 5)
+ggsave(p, filename = file.path(subdir, "dw_dh_distances.png"), width = 6, height = 7)
+ggsave(p, filename = file.path(subdir, "dw_dh_distances.svg"), width = 6, height = 7)
+
