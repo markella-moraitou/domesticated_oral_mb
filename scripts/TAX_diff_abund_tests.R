@@ -175,16 +175,14 @@ mcmc_res_human$dataset <- "Human vs Wild"
 res <- bind_rows(mcmc_res_all, mcmc_res_equus, mcmc_res_ovis, mcmc_res_sus, mcmc_res_human) %>%
         filter(!grepl("Genus.*", term)) %>%
         group_by(dataset) %>%
-        # Adjust pMCMC for multiple testing per dataset
-        mutate(pMCMC_adj = p.adjust(pMCMC, method = "BH")) %>% ungroup %>%
         mutate(term = str_remove(term, "Domestication")) %>%
         arrange(dataset, term) %>%
         rename(coeff = post.mean)
 
 write.csv(res, file.path(subdir, "mcmcglmm_res_combined.csv"), quote = FALSE, row.names = FALSE)
 
-# Keep only taxa that are differentially abundant in any of the analyses
-signif_taxa <- res %>% filter(pMCMC_adj < 0.05) %>% pull(OTU) %>% unique
+# Keep only taxa that are differentially abundant in any of the analyses. Using p < 0.01 to reduce the number of results
+signif_taxa <- res %>% filter(pMCMC < 0.01) %>% pull(OTU) %>% unique
 
 # Order by difference of abundance in the largest subset
 taxa_order <- res %>% filter(OTU %in% signif_taxa) %>% filter(dataset == "Domestic vs Wild (All)") %>%
@@ -192,10 +190,10 @@ taxa_order <- res %>% filter(OTU %in% signif_taxa) %>% filter(dataset == "Domest
 
 res_filt <- res %>% filter(OTU %in% signif_taxa) %>%
             mutate(OTU = factor(OTU, levels = taxa_order)) %>%
-            mutate(signif = case_when(pMCMC_adj < 0.001 ~ "***",
-                                      pMCMC_adj < 0.01 ~ "**",
-                                      pMCMC_adj < 0.05 ~ "*",
-                                      pMCMC_adj < 0.1 ~ ".",
+            mutate(signif = case_when(pMCMC < 0.001 ~ "***",
+                                      pMCMC < 0.01 ~ "**",
+                                      pMCMC < 0.05 ~ "*",
+                                      pMCMC < 0.1 ~ ".",
                                       TRUE ~ "")) %>%
             # Make x labels look a bit nicer
             mutate(dataset = gsub(" vs ", "\nvs ", dataset)) %>%
@@ -207,7 +205,7 @@ p <- ggplot(data = res_filt, aes(x = dataset, y = OTU, fill = coeff)) +
     scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, name = "taxon domestic coefficient", na.value = "transparent") +
     geom_text(aes(label = signif), color = "black", size = 2, hjust = 0.5, vjust = 0.5) +
     theme(legend.position = "top", legend.text = element_text(angle = 90, vjust = 0.5, size = 10),
-          legend.title = element_text(size = 10),
+          legend.title = element_text(size = 8),
           panel.background = element_rect(fill = "grey90"), panel.grid = element_blank(),
           axis.text.y = element_text(size = 6), axis.title.y = element_blank(),
           axis.text.x = element_text(size = 10, vjust = 0.5, hjust = 1), axis.title.x = element_blank()) +
@@ -300,7 +298,7 @@ abundances <- phy_genus_clr@otu_table %>% t %>% data.frame %>% rownames_to_colum
               mutate(Common.name = case_when(Domestication == "feral" ~ "Feral sheep",
                                           TRUE ~ Common.name))
 
-res_abund <- res_filt %>% filter(pMCMC_adj < 0.05) %>%
+res_abund <- res_filt %>% filter(pMCMC < 0.01) %>%
             mutate(association = case_when(coeff < 0 ~ "wild+",
                                            coeff > 0 ~ "wild-")) %>%
             filter(dataset != "Domestic vs Wild (All)") %>%
@@ -326,7 +324,7 @@ p <- ggplot(res_abund, aes(x = Common.name, y = Abundance, fill = Species, colou
     facet_wrap(~ paste(as.character(OTU), label, sep = "\n"), ncol = 7, scales = "free_y") +
     theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(),
           axis.title.x = element_blank(), axis.text.y = element_text(angle = 0, size = 10),
-          strip.text.x = element_text(size = 10),
+          strip.text.x = element_text(size = 10, margin = margin(0, 0, 0, 0)),
           legend.position = "top") + ylab("CLR-transformed abundances") +
     guides(fill=guide_legend(nrow=1, byrow=TRUE))
 
