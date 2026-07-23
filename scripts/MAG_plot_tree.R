@@ -96,7 +96,7 @@ bac_p <- ggtree(bac_tree, layout="fan", open.angle=90, aes(color=phylum), size =
   guides(fill = guide_legend(override.aes = list(size = 5)), 
   color = guide_legend(override.aes = list(size = 5)))
 
-ggsave(bac_p, file=file.path(subdir, "bac_genome_tree.png"), width = 15, height = 15)
+ggsave(bac_p, file=file.path(subdir, "bac_genome_tree.png"), width = 20, height = 20)
 
 #### Archaea tree ####
 # Colour by order and habitat

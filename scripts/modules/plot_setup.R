@@ -14,7 +14,7 @@ custom_theme <- function() {
       axis.title=element_text(size = 14, face = "bold"),
       legend.title=element_text(size = 14, face = "bold"),
       legend.text=element_text(size=12),
-      strip.text = element_text(size = 12, face = "bold"),
+      strip.text = element_text(size = 12),
       strip.background = element_rect(fill = "white", colour = "black")
     )
 }
