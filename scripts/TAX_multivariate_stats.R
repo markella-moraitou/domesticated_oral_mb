@@ -495,7 +495,7 @@ reads <- sample_data$contig_reads_count
 set.seed(123)
 
 # Run PERMANOVA with all factors and only species
-perm <- adonis2(otus ~ genus * dom + reads,
+perm <- adonis2(otus ~ reads + genus * dom,
         permutations = 1000, by = "term", method = "euclidean")
 
 write.csv(as.data.frame(perm), file = file.path(subdir, "permanova_clr.csv"), row.names = TRUE, quote = TRUE)
@@ -514,7 +514,7 @@ reads <- sample_data$contig_reads_count
 set.seed(123)
 
 # Run PERMANOVA with all factors and only species
-perm <- adonis2(otus ~ genus * dom + reads,
+perm <- adonis2(otus ~ reads + genus * dom,
         permutations = 1000, by = "term", method = "euclidean")
 
 write.csv(as.data.frame(perm), file = file.path(subdir, "permanova_philr.csv"), row.names = TRUE, quote = TRUE)
@@ -533,7 +533,7 @@ reads <- sample_data$contig_reads_count
 set.seed(123)
 
 # Run PERMANOVA with all factors and only species
-perm <- adonis2(otus ~ genus * dom + reads,
+perm <- adonis2(otus ~ reads + genus * dom,
         permutations = 1000, by = "term", method = "jaccard")
 
 write.csv(as.data.frame(perm), file = file.path(subdir, "permanova_pa.csv"), row.names = TRUE, quote = TRUE)

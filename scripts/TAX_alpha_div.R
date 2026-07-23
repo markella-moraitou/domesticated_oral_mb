@@ -303,7 +303,7 @@ div_filt <- div %>% filter(!is.na(filt_rarefied) & !is.na(PD))
 cor.test(div_filt$filt_rarefied, div_filt$PD, method = "pearson")
 
 # Linear model
-model <- aov(filt_rarefied ~ Genus*Domestication + contig_reads_count, data = div_filt)
+model <- aov(filt_rarefied ~ contig_reads_count + Genus*Domestication, data = div_filt)
 res <- summary(model)[[1]]
 
 shapiro.test(residuals(model))

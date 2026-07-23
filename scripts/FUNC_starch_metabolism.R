@@ -123,16 +123,17 @@ top_genera <- amy_summ %>%
   pull(genus)
 
 amy_abundances <- amy_abundances %>%
-  mutate(genus_grouped = ifelse(genus %in% top_genera | genus == "no support", genus, "other"))
+  mutate(genus_grouped = ifelse(genus %in% top_genera | genus == "no support", genus, "other")) %>%
+  mutate(genus_grouped = ifelse(genus_grouped == "no support", "unclassified", genus_grouped))
 
 genus_palette <- brewer.pal(n = length(top_genera), name = "Set1")
 names(genus_palette) <- top_genera
 
-genus_palette["no support"] <- "black"
+genus_palette["unclassified"] <- "black"
 genus_palette["other"] <- "grey50"
 
 amy_abundances$genus_grouped <- factor(amy_abundances$genus_grouped,
-                                        levels = c(top_genera, "other", "no support"))
+                                        levels = c(top_genera, "other", "unclassified"))
 
 # Get mean abundance per host group
 amy_summ %>% 
@@ -168,11 +169,11 @@ p_g <- ggplot(amy_abundances, aes(y = Sample, x = rel_abundance, fill = genus_gr
   facet_grid(Group ~ ., scales = "free_y", space = "free_y") +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
         axis.text.x = element_text(vjust = 0.5),
-        strip.text.y = element_text(angle = 0),
-        legend.position = "bottom", legend.title.position = "top") +
+        strip.text.y = element_text(angle = 0, margin = margin(0,0.5,0,0.5, "cm")),
+        legend.position = "bottom", legend.title.position = "top", legend.text = element_text(margin = margin(r = 10))) +
     guides(fill = guide_legend(ncol = 2, byrow = TRUE))
 
-p <- plot_grid(p_t, p_g, align = "h", axis = "tb", ncol = 2, rel_widths = c(1, 1.2))
+p <- plot_grid(p_t, p_g, align = "h", axis = "tb", ncol = 2, rel_widths = c(1, 1.3))
 
 p <- ggdraw(p) + 
   draw_label("Relative abundance of amylase genes", fontface = "bold", size = 15, x = 0.5, y = 0.27)
@@ -214,7 +215,7 @@ amy_abundances_total <- amy_abundances_total %>%
                               Genus %in% c("Equus", "Ovis") ~ "herbivore"))
 
 # Linear model
-model <- aov(rel_abundance ~ Diet*Domestication + contig_reads_count, data = amy_abundances_total)
+model <- aov(rel_abundance ~ contig_reads_count + Diet*Domestication, data = amy_abundances_total)
 res <- summary(model)[[1]]
 
 shapiro.test(residuals(model))
@@ -251,8 +252,8 @@ abpA_table <- abpA_hmmer %>% select(target.name, E.value, description) %>%
                                   TRUE ~ 0)) %>%
   # Add taxonomy of contig
   left_join(select(abpA_tax, c(X..contig, phylum, class, order, family, genus, species)), by = c("contigName" = "X..contig")) %>%
-  # When classification are missing, use 'no support'
-  mutate(across(phylum:species, ~ replace_na(.x, "no support"))) %>%
+  # When classification are missing, use 'unclassified'
+  mutate(across(phylum:species, ~ replace_na(.x, "unclassified"))) %>%
   # Combine with sample metadata
   rename(Sample.ID = sample) %>%
   full_join(meta) %>% 
@@ -274,24 +275,24 @@ abpA_table_loose <-
 
 # Get top genera for plotting
 top_genera2 <- abpA_table_loose %>% group_by(genus) %>% summarise(rel_abundance = sum(rel_abundance)) %>%
-        arrange(desc(rel_abundance)) %>% filter(genus != "no support" & rel_abundance > 0) %>% head(3) %>% pull(genus)
+        arrange(desc(rel_abundance)) %>% filter(genus != "unclassified" & rel_abundance > 0) %>% head(3) %>% pull(genus)
 
 # Match with previous plots
 genus_palette2 <- genus_palette[top_genera2]
 genus_palette2 <- genus_palette2[!is.na(genus_palette2)]
 
 # Add remaining genera
-missing_gen <- top_genera2[!top_genera2 %in% names(genus_palette2) & !top_genera2 %in% c("no support", "other")]
+missing_gen <- top_genera2[!top_genera2 %in% names(genus_palette2) & !top_genera2 %in% c("unclassified", "other")]
 missing_col <- brewer.pal(n = length(missing_gen), name = "Set2")
 
 genus_palette2 <- c(genus_palette2, setNames(missing_col, missing_gen))
 
-genus_palette2["no support"] <- "black"
+genus_palette2["unclassified"] <- "black"
 genus_palette2["other"] <- "grey50"
 
 abpA_table_loose <- 
     abpA_table_loose %>%
-    mutate(genus_grouped = case_when(genus %in% c(top_genera2, "no support") ~ genus, TRUE ~ "other")) %>%
+    mutate(genus_grouped = case_when(genus %in% c(top_genera2, "unclassified") ~ genus, TRUE ~ "other")) %>%
     mutate(genus_grouped = factor(genus_grouped, levels = names(genus_palette2)))
 
 # Plot
