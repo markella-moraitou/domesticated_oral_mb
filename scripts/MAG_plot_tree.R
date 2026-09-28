@@ -77,6 +77,10 @@ ages_damage <- bac_meta %>% rbind(ar_meta) %>% select(label, bin, domain, Sample
 
 bac_meta <- bac_meta %>% mutate(phylum = case_when(is.na(phylum) ~ "Other", TRUE ~ phylum))
 
+# Scientific to common names for relabelling
+species_labels_df <- data.frame(bac_meta) %>% select(host_species, Common.name) %>% unique
+species_labels <- setNames(species_labels_df$Common.name, species_labels_df$host_species)
+
 #### Bacteria tree ####
 # Colour by order and habitat
 bac_p <- ggtree(bac_tree, layout="fan", open.angle=90, aes(color=phylum), size = 1) %<+%
@@ -84,10 +88,10 @@ bac_p <- ggtree(bac_tree, layout="fan", open.angle=90, aes(color=phylum), size =
   scale_colour_manual(values = phylum_palette, name = "MAG phylum", na.value = "black") +
   new_scale_color() +
   geom_tiplab(size=5, aes(colour=host_species)) +
-  scale_colour_manual(values = species_palette, name = "Host species", na.value = "black") +
+  scale_colour_manual(values = species_palette, name = "Host species", na.value = "black", labels = species_labels) +
   new_scale_color() +
   geom_tippoint(size = 3, aes(color=host_species)) +
-  scale_colour_manual(values = species_palette, name = "Host species", na.value = "black") +
+  scale_colour_manual(values = species_palette, name = "Host species", na.value = "black", labels = species_labels) +
   scale_x_continuous(expand = c(0, 0)) +  # Adjust the x-axis scaling 
   theme(plot.margin = unit(c(6, 6, 5, 5), "cm"), # Remove margins
         legend.position=c(0.70, 0.20),
@@ -104,10 +108,10 @@ ar_p <- ggtree(ar_tree) %<+%
     select(ar_meta, c(label, host_species)) +
   new_scale_color() +
   geom_tiplab(size=3, aes(colour=host_species)) +
-  scale_colour_manual(values = species_palette, name = "Host species", na.value = "black") +
+  scale_colour_manual(values = species_palette, name = "Host species", na.value = "black", labels = species_labels) +
   new_scale_color() +
   geom_tippoint(size = 2, aes(color=host_species)) +
-  scale_colour_manual(values = species_palette, name = "Host species", na.value = "black") +
+  scale_colour_manual(values = species_palette, name = "Host species", na.value = "black", labels = species_labels) +
   scale_x_continuous(expand = c(0.4, 0.4)) +  # Adjust the x-axis scaling 
   theme(plot.margin = unit(c(0, 3, 0, 0), "cm"),
         legend.position=c(0.2, 0.8),
@@ -124,6 +128,6 @@ ggsave(ar_p, file=file.path(subdir, "ar_genome_tree.png"), width = 7, height = 3
 
 p <- ggplot(aes(x = Period, y = median_damage_model_p, colour = host_species), data = ages_damage) +
         geom_jitter(alpha = 0.5, width = 0.1) +
-        scale_colour_manual(values = species_palette, name = "Host species")
+        scale_colour_manual(values = species_palette, name = "Host species", labels = species_labels)
 
 ggsave(p, file=file.path(subdir, "age_v_damage.png"), width = 8, height = 6)

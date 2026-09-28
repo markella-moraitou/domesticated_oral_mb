@@ -184,9 +184,11 @@ ggsave(filename = file.path(subdir, "phy_sp_f_composition.png"), device="png", w
 #### PCA ####
 #############
 
-#### Get shape scales for plotting ####
-
 dom_shape_palette <- c("domestic" = 1, "wild" = 16, "feral" = 6, "human" = 8)
+
+# Scientific to common names for relabelling
+species_labels_df <- data.frame(phy_sp_f_clr@sam_data) %>% select(Species, Common.name) %>% unique
+species_labels <- setNames(species_labels_df$Common.name, species_labels_df$Species)
 
 #### CLR ABUNDANCES ####
 
@@ -199,8 +201,7 @@ p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
 ggsave(file.path(subdir, "PCA_clr_screeplot.png"), p, width=3, height=3)
 
 # Color by species
-p <- custom_ord_plot(phy_sp_f_clr, ord, colour="Species", shape="Domestication", arrows_scaling = 1, type = "PCA") +
-  scale_shape_manual(values=dom_shape_palette, name = "Domestication")
+p <- custom_ord_plot(phy_sp_f_clr, ord, colour="Species", shape="Domestication", arrows_scaling = 1, type = "PCA") 
 
 ggsave(file.path(subdir, "PCA_clr_1_2.png"), p, width=10, height=6)
 
@@ -215,8 +216,7 @@ p <- ord %>% ord_get() %>% plot_scree() + custom_theme() +
 ggsave(file.path(subdir, "PCA_pa_screeplot.png"), p, width=3, height=3)
 
 # Color by species
-p <- custom_ord_plot(phy_sp_f_pa, ord, colour="Species", shape="Domestication", arrows_scaling = 1, type = "PCA") +
-  scale_shape_manual(values=dom_shape_palette, name = "Domestication")
+p <- custom_ord_plot(phy_sp_f_pa, ord, colour="Species", shape="Domestication", arrows_scaling = 1, type = "PCA")
 
 ggsave(file.path(subdir, "PCA_pa_1_2.png"), p, width=10, height=6)
 
@@ -234,7 +234,7 @@ p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0, auto_capt
   geom_point(size = 2, alpha = 0.8, aes(colour = Species, shape = Domestication)) +
   custom_theme() +
   scale_shape_manual(values=dom_shape_palette, name = "Domestication") +
-  scale_color_manual(values=species_palette, name = "Species") +
+  scale_color_manual(values=species_palette, name = "Species", labels = species_labels) +
   theme(legend.position = "bottom", legend.direction = "vertical") +
   geom_phylopic(data = centroids(ord@ord, phy_sp_philr), aes(colour = Species), uuid = centroids(ord@ord, phy_sp_philr)$uid, width = 0.5, alpha = 0.8) +
   guides(shape = guide_legend(ncol = 1),
@@ -424,7 +424,7 @@ p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0, auto_capt
     geom_point(size = 2, alpha = 0.8, aes(colour = Species, shape = Domestication)) +
     custom_theme() +
     geom_phylopic(data = centroids_ord, aes(colour = Species), uuid = centroids_ord$uid, fill = "transparent", height = pp_height) +
-    scale_colour_manual(values=species_palette, name = "Species") +
+    scale_colour_manual(values=species_palette, name = "Species", labels = species_labels) +
     scale_shape_manual(values=dom_shape_palette, name = "Domestication") +
     theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
     guides(shape = guide_legend(ncol = 1), colour = guide_legend(ncol = 3, byrow = FALSE))
@@ -466,7 +466,7 @@ p <- ord_plot(ord, colour="Species", shape="Domestication", alpha = 0, auto_capt
     geom_point(size = 2, alpha = 0.8, aes(colour = Species, shape = Domestication)) +
     custom_theme() +
     geom_phylopic(data = centroids_ord, aes(colour = Species), uuid = centroids_ord$uid, fill = "transparent", height = pp_height) +
-    scale_colour_manual(values=species_palette, name = "Species") +
+    scale_colour_manual(values=species_palette, name = "Species", labels = species_labels) +
     scale_shape_manual(values=dom_shape_palette, name = "Domestication") +
     theme(legend.position = "bottom", legend.direction = "vertical", legend.text = element_text(size = 8)) +
     guides(shape = guide_legend(ncol = 1), colour = guide_legend(ncol = 3, byrow = FALSE))

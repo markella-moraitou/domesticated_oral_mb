@@ -275,16 +275,21 @@ dw_dh_distances <- dw_dh_distances %>% mutate(presence = case_when(presence_huma
                                               presence_human == "mapped" & presence_wild == "mapped" ~ "both via mapping")) %>%
     select(-presence_human, -presence_wild)
 
-# Plot 
+# Relabel facets
+species_labels_df <- host_species_data %>% select(host_species, Common.name) %>% unique()
+species_labels <- setNames(species_labels_df$Common.name, species_labels_df$host_species)
+
+# Plot
 p <- ggplot(data = dw_dh_distances, aes(x = Distance_wild, y = Distance_human, colour = domesticate_host, shape = presence)) +
      geom_jitter(alpha = 0.5, size = 2, height = 0.01, width = 0.01) +
      scale_colour_manual(values = species_palette, name = "Domesticate host") +
      scale_shape_manual(values = c("both via assembly" = 15, "both via mapping" = 3, "one assembled, one mapped" = 12), name = "MAG presence identified:") +
-     facet_grid(domesticate_host ~ .) +
+     facet_grid(domesticate_host ~ ., labeller = labeller(.rows = species_labels)) +
      labs(x = "Distance to nearest wild counterpart MAG",
           y = "Distance to nearest human MAG") +
      geom_abline(slope = 1, intercept = 0, linetype = "dotted", color = "black") +
-     theme(legend.direction = "vertical", legend.position = "bottom")
+     theme(legend.direction = "vertical", legend.position = "bottom") +
+     guides(colour = "none")
 
 # Label mags more related to human MAGs
 p <- p + geom_text(data = subset(dw_dh_distances, Distance_human < Distance_wild),

@@ -81,7 +81,7 @@ write.csv(distances, file = file.path(subdir, "distances_to_human_clr.csv"), quo
 # Plot
 p <- ggviolin(data = distances, x = "Domestication", y = "distance", fill = "Species", facet.by = "Genus") +
   scale_fill_manual(values = species_palette) +
-  theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.5)) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.5), strip.text = element_text(face="italic")) +
   ylab("Aitchison distances")
 
 # Run Kruskal Wallis tests
@@ -129,7 +129,7 @@ write.csv(distances, file = file.path(subdir, "distances_to_human_philr.csv"), q
 # Plot
 p <- ggviolin(data = distances, x = "Domestication", y = "distance", fill = "Species", facet.by = "Genus") +
   scale_fill_manual(values = species_palette) +
-  theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.5)) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.5), strip.text = element_text(face="italic")) +
   ylab("PhILR distances")
 
 # Run Kruskal Wallis tests
@@ -177,7 +177,7 @@ write.csv(distances, file = file.path(subdir, "distances_to_human_pa.csv"), quot
 # Plot
 p <- ggviolin(data = distances, x = "Domestication", y = "distance", fill = "Species", facet.by = "Genus") +
   scale_fill_manual(values = species_palette) +
-  theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.5)) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.5), strip.text = element_text(face="italic")) +
   ylab("Jaccard distances")
 
 # Run Kruskal Wallis tests

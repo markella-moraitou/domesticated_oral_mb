@@ -154,6 +154,10 @@ ggsave(file.path(subdir, "screeplot_genes.png"), p, width=3, height=3)
 
 dom_shape_palette <- c("domestic" = 1, "wild" = 16, "feral" = 6, "human" = 8)
 
+# Scientific to common names for relabelling
+species_labels_df <- data.frame(phy_gene_f@sam_data) %>% select(Species, Common.name) %>% unique
+species_labels <- setNames(species_labels_df$Common.name, species_labels_df$Species)
+
 p <- custom_ord_plot(phy_gene_f, ord, colour="Species", shape="Domestication", type = "RDA")
 
 ggsave(p, filename = file.path(subdir, "gene_ordination.png"), width=10, height=6)
@@ -342,7 +346,7 @@ write.csv(distances, file = file.path(subdir, "distances_to_human_gene_clr.csv")
 # Plot
 p <- ggviolin(data = distances, x = "Domestication", y = "distance", fill = "Species", facet.by = "Genus") +
   scale_fill_manual(values = species_palette) +
-  theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.5)) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.5), strip.text = element_text(face="italic")) +
   ylab("Aitchison distances")
 
 # Run Kruskal Wallis tests
@@ -392,7 +396,7 @@ write.csv(distances, file = file.path(subdir, "distances_to_human_path_clr.csv")
 # Plot
 p <- ggviolin(data = distances, x = "Domestication", y = "distance", fill = "Species", facet.by = "Genus") +
   scale_fill_manual(values = species_palette) +
-  theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.5)) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, vjust = 0.5), strip.text = element_text(face="italic")) +
   ylab("Aitchison distances")
 
 # Run Kruskal Wallis tests

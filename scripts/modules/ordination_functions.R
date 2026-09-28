@@ -188,7 +188,7 @@ custom_ord_plot <- function(phyloseq, ordination, colour_var, shape_var, arrows_
         scale_fill_manual(values=habitat_palette, name = "Habitat")
   } else if (colour_var == "Species") {
     p <- p +
-        scale_colour_manual(values=species_palette, name = "Species")
+        scale_colour_manual(values=species_palette, name = "Species", labels = species_labels)
         scale_fill_manual(values=species_palette, name = "Species")
   }
   if (shape_var == "diet.general") {
@@ -199,7 +199,7 @@ custom_ord_plot <- function(phyloseq, ordination, colour_var, shape_var, arrows_
         scale_shape_manual(values=order_shape_scale, name = "Order")
   } else if (shape_var == "Common.name") {
     p <- p +
-        scale_shape_manual(values=species_shape_scale, name = "Species")
+        scale_shape_manual(values=species_shape_scale, name = "Species", labels = species_labels)
   } else if (shape_var == "Domestication") {
     p <- p +
         scale_shape_manual(values=dom_shape_palette, name = "Domestication")

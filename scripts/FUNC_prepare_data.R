@@ -212,12 +212,15 @@ contigs_to_genes <- data.frame(phy_gene@sam_data) %>% select(Species, contig_cou
 
 thres <- 10^6
 
+species_labels_df <- data.frame(phy_gene@sam_data) %>% select(Species, Common.name) %>% unique
+species_labels <- setNames(species_labels_df$Common.name, species_labels_df$Species)
+
 p <- ggplot(contigs_to_genes, aes(x = Total_abundance, y = Gene_richness, colour = Species)) +
     geom_point() +
     scale_x_log10() +
     geom_vline(xintercept = thres) +
     scale_y_log10() +
-    scale_color_manual(values = species_palette) +
+    scale_color_manual(values = species_palette, labels = species_labels) +
     ylab("Gene richness (number of unique genes)") + xlab("Total gene abundance (number of classified reads)")
 
 ggsave(p, filename = file.path(subdir, "contigs_to_genes.png"))

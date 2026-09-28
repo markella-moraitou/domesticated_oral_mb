@@ -47,13 +47,14 @@ presabs <- read.csv(file.path(magdir, "mag_mapping_stats", "hq_mag_presence_per_
 ############################
 
 # For this analysis we consider all sheep domestic
-species_dom <- bac_meta %>% select(host_species, Domestication) %>%
+species_meta <- bac_meta %>% select(host_species, Domestication, Common.name) %>%
                 filter(!is.na(host_species) & Domestication != "feral") %>% unique
 
 # Combine MAG taxonomy with presence/absence data
 data <- rbind(bac_meta, ar_meta) %>% select(label, bin, domain, phylum, order, family, genus) %>%
     right_join(presabs, by = c("label" = "label", "bin" = "bin")) %>%
-    mutate(Domestication = species_dom$Domestication[match(host_species, species_dom$host_species)]) %>%
+    mutate(Domestication = species_meta$Domestication[match(host_species, species_meta$host_species)],
+           Common.name = species_meta$Common.name[match(host_species, species_meta$host_species)]) %>%
     mutate(host = case_when(Domestication == "human" ~ "human",
                             TRUE ~ paste(Domestication, host_genus)))
 
@@ -272,7 +273,8 @@ plot_substree <- function(big_tree, node, mag_data, mag_presence) {
               select(sub_data, c(label, phylum, host_species)) +
               geom_tippoint(aes(colour = host_species), size=1) +
               geom_tiplab(size=2, aes(colour = host_species)) +
-              scale_colour_manual(values = species_palette, name = "Assembled in")
+              scale_colour_manual(values = species_palette, name = "Assembled in") +
+              theme(legend.text = element_text(face = "italic"))
     
     # Add presence/absence heatmap
     pres_data <- mag_presence %>% mutate(presence=TRUE) %>%
@@ -281,11 +283,13 @@ plot_substree <- function(big_tree, node, mag_data, mag_presence) {
                     pivot_wider(names_from = host_species, values_from = presence, values_fill = 0) %>%
                     column_to_rownames("label") %>% as.matrix
     
-    p <- gheatmap(p_tree, pres_data, offset = 0.08, width = 1.5,
-        colnames=TRUE, font.size = 2, legend_title="Presence") +
+    col_labels <- mag_data$Common.name[match(colnames(pres_data), mag_data$host_species)]
+    
+    p <- gheatmap(p_tree, pres_data, offset = 0.08, width = 1.5, custom_column_labels = col_labels,
+                colnames=TRUE, font.size = 2, legend_title="Presence") +
         scale_fill_manual(values = c("grey96", "orange"), labels = c("absent", "present"), name = "") +
         theme(legend.position = "none", plot.title = element_text(size = 8)) +
-        ggtitle(paste0("Subtree at node ", node))
+        ggtitle(paste0("Subtree at node '", node, "'"))
     return(p) 
 }
 
@@ -296,8 +300,8 @@ splits_df_bac <- splits_df_filt %>% filter(node_type != "other" & domain == "Bac
 for (i in 1:nrow(splits_df_bac)) {
     node <- splits_df_bac$node[i]
     p <- plot_substree(bac_tree, node, data, presabs)
-    ggsave(p, file = file.path(subdir, paste0("subtree_", node, ".png")), width=5, height=1)
-}
+   ggsave(p, file = file.path(subdir, paste0("subtree_", node, ".png")), width=5, height=1)
+} 
 
 # For archaea
 splits_df_ar <- splits_df_filt %>% filter(node_type != "other" & domain == "Archaea")

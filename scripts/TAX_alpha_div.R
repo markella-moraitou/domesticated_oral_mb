@@ -97,7 +97,7 @@ p <- ggplot(rare_results_filt) +
   geom_line(aes(x = subsample, y = S, group = Sample, colour = Species)) +
   scale_color_manual(values=species_palette, name = "Species") +
   facet_grid(~ Species_short) +
-  theme(legend.position = "none") +
+  theme(legend.position = "none", strip.text = element_text(face = "italic")) +
   xlab("Number of sequences sampled") +
   ylab("Observed species richness") +
   theme(legend.position = "none")
@@ -148,7 +148,7 @@ p <- ggplot(rare_results_filt) +
   geom_line(aes(x = subsample, y = S, group = Sample, colour = Species)) +
   scale_color_manual(values=species_palette, name = "Species") +
   facet_grid(~ Species_short) +
-  theme(legend.position = "none") +
+  theme(legend.position = "none", strip.text = element_text(face = "italic")) +
   xlab("Number of sequences sampled") +
   ylab("Observed species richness") +
   theme(legend.position = "none")
@@ -201,7 +201,8 @@ p <- ggplot(alpha_div, aes(x=Group, y=filt)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=species_palette, name = "Species") +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
-  theme(legend.position = "none", axis.title.y = element_blank()) +
+  theme(legend.position = "none", axis.title.y = element_blank(),
+        strip.text = element_text(face = "italic")) +
   ylab("Observed species richness") +
   coord_flip()
 
@@ -213,7 +214,8 @@ p <- ggplot(alpha_div, aes(x=Group, y=filt_rarefied)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=species_palette, name = "Species") +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
-  theme(legend.position = "none", axis.title.y = element_blank()) +
+  theme(legend.position = "none", axis.title.y = element_blank(),
+        strip.text = element_text(face = "italic")) +
   ylab("Observed species richness\n(after rarefaction)") +
   coord_flip()
 
@@ -225,7 +227,8 @@ p <- ggplot(alpha_div, aes(x=Group, y=raw)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=species_palette, name = "Species") +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
-  theme(legend.position = "none", axis.title.y = element_blank()) +
+  theme(legend.position = "none", axis.title.y = element_blank(),
+        strip.text = element_text(face = "italic")) +
   ylab("Observed species richness") +
   coord_flip()
 
@@ -237,7 +240,8 @@ p <- ggplot(alpha_div, aes(x=Group, y=raw_rarefied)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=species_palette, name = "Species") +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
-  theme(legend.position = "none", axis.title.y = element_blank()) +
+  theme(legend.position = "none", axis.title.y = element_blank(),
+        strip.text = element_text(face = "italic")) +
   ylab("Observed species richness\n(after rarefaction)") +
   coord_flip()
 
@@ -268,7 +272,8 @@ p <- ggplot(phy_div, aes(x=Group, y=PD)) +
   scale_fill_manual(values=species_palette, name = "Species") +
   scale_x_discrete(labels = setNames(phy_sp@sam_data$Group, phy_sp@sam_data$Species)) +
   facet_grid(Genus ~ ., scales = "free_y", space = "free_y") +
-  theme(legend.position = "none", axis.title.y = element_blank()) +
+  theme(legend.position = "none", axis.title.y = element_blank(),
+        strip.text = element_text(face = "italic")) +
   ylab("Faith's PD") +
   coord_flip()
 
@@ -282,7 +287,7 @@ p <- ggplot(phy_div, aes(x=SR, y=PD)) +
   scale_colour_manual(values=species_palette, name = "Species") +
   #scale_x_discrete(labels = setNames(phy_sp@sam_data$Common.name, phy_sp@sam_data$Species)) +
   theme(legend.position = "bottom", axis.text = element_text(size = 8),
-        strip.text.y = element_text(size = 10)) +
+        strip.text = element_text(size = 10)) +
   guides(colour = guide_legend(ncol = 2, byrow = TRUE)) +
   xlab("Observed species richness\n(after rarefaction)") + ylab("Faith's PD\n(after rarefaction)")
 
